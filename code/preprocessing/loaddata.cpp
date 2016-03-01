@@ -5,13 +5,22 @@ void loadData(Dataset& data, std::string filename)
     data.clear();
     std::ifstream in(filename);
     std::string line;
+    int numFields = 0;
+    std::getline(in ,line);
+    std::stringstream lineStream(line);
+    std::string cell;
+    while(std::getline(lineStream, cell, ','))
+    {
+        numFields++;
+    }
     while(std::getline(in, line))
     {
         std::stringstream lineStream(line);
         std::string cell;
         Record record;
-        while(std::getline(lineStream, cell, ','))
+        for(int i=0; i<numFields; i++)
         {
+            std::getline(lineStream, cell, ',');
             Field field;
             try
             {
@@ -31,6 +40,7 @@ void loadData(Dataset& data, std::string filename)
             }
             record.push_back(field);
         }
+        assert(record.size() == numFields);
         data.push_back(record);
     }
     in.close();
