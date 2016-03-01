@@ -1,5 +1,6 @@
 CC       = g++
 CXXFLAGS = -std=c++11
+INCFLAGS = -I$(BOOST_HOME)/include
 SRC      = $(wildcard *.cpp)
 OBJS     = $(patsubst %.cpp,%.o,$(SRC))
 EXEC     = loaddatatest.out
@@ -8,7 +9,7 @@ $(EXEC) : $(OBJS)
 	$(CC) $^ -o $@
 
 %.o : %.cpp
-	$(CC) $(CXXFLAGS) -c $^ -o $@
+	$(CC) $(INCFLAGS) $(CXXFLAGS) -c $^ -o $@
 
 .PHONY : clean
 
