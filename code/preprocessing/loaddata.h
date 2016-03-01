@@ -7,8 +7,8 @@
 #include <sstream>
 #include <vector>
 #include <string>
- #include <cassert>
- #include "boost/variant.hpp"
+#include <cassert>
+#include "boost/variant.hpp"
 
 typedef boost::variant<long long, double, std::string> Field;
 typedef std::vector<Field> Record;
