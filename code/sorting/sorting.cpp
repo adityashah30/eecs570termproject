@@ -1,6 +1,7 @@
 #include "sorting.h"
 
 static void* sortDataThread(void* args);
+
 class SortComparator
 {
 public:
@@ -32,14 +33,6 @@ public:
     }
 };
 
-/**
- * The main sorting function.
- * @param out        The output dataset
- * @param in         The input dataset
- * @param index      The field index by which data is to be sorted
- * @param numThreads The number of threads spawned
- */
-
 void sortData(Dataset& out, Dataset& in, int index, int numThreads)
 {
     out = in;
@@ -59,8 +52,8 @@ void sortData(Dataset& out, Dataset& in, int index, int numThreads)
                             sortDataThread, (void*)&args[i]);
         if(rc)
         {
-            fprintf(stderr, "Error: Return code from pthread_create on threadId: %d is %d\n", i, rc);
-            fflush(stderr);
+            std::cerr << "Error: Return code from pthread_create on threadId: " 
+                      << i << " is " << rc << std::endl;
             exit(EXIT_FAILURE);
         }
     }
@@ -70,8 +63,8 @@ void sortData(Dataset& out, Dataset& in, int index, int numThreads)
                         sortDataThread, (void*)&args[numThreads-1]);
     if(rc)
     {
-        fprintf(stderr, "Error: Return code from pthread_create on threadId: %d is %d\n", numThreads-1, rc);
-        fflush(stderr);
+        std::cerr << "Error: Return code from pthread_create on threadId: " 
+                  << numThreads-1 << " is " << rc << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -80,8 +73,8 @@ void sortData(Dataset& out, Dataset& in, int index, int numThreads)
         rc = pthread_join(threads[i], NULL);
         if(rc)
         {
-            fprintf(stderr, "Error: Return code from pthread_create on threadId: %d is %d\n", i, rc);
-            fflush(stderr);
+            std::cerr << "Error: Return code from pthread_create on threadId: " 
+                      << i << " is " << rc << std::endl;
             exit(EXIT_FAILURE);
         }
     }

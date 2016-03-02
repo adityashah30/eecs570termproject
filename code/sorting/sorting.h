@@ -17,4 +17,11 @@
 #include <cstdlib>
 #include <pthread.h>
 
+/**
+ * The main sorting function.
+ * @param out        The output dataset
+ * @param in         The input dataset
+ * @param index      The field index by which data is to be sorted
+ * @param numThreads The number of threads spawned
+ */
 void sortData(Dataset& out, Dataset& in, int index, int numThreads);

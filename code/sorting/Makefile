@@ -6,7 +6,7 @@ SRC      = $(wildcard *.cpp)
 OBJS     = $(patsubst %.cpp,%.o,$(SRC))
 EXEC     = sortingtest.out
 
-$(EXEC) : $(OBJS) ../preprocessing/loaddata.o
+$(EXEC) : $(OBJS) ../preprocessing/loaddata.o ../timer/timer.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 %.o : %.cpp
