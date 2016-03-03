@@ -24,19 +24,19 @@ void loadData(Dataset& data, std::string filename)
             Field field;
             try
             {
-                field = stoll(cell);
+                double val = stod(cell);
+                if(static_cast<long long>(val) == val)
+                {
+                    field = static_cast<long long>(val);
+                }
+                else
+                {
+                    field = val;
+                }
             }
             catch(const std::invalid_argument&)
             {
-                try
-                {
-                    field = stod(cell);
-                }
-                catch(const std::invalid_argument&)
-                {
-                    
-                    field = cell;
-                }
+                field = cell;   
             }
             record.push_back(field);
         }
