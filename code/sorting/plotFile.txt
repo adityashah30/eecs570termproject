@@ -1,0 +1,7 @@
+set terminal pngcairo
+set output "sorting_scaling.png"
+set logscale x 2
+set xlabel "NumThreads"
+set ylabel "Time (us)"
+set title "Time to sort vs NumThreads"
+plot "sortingScalingResults.txt" u 1:2 w lines notitle

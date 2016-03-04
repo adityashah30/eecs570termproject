@@ -1,12 +1,18 @@
 CC       = g++
-CXXFLAGS = -std=c++11
+CXXFLAGS = -std=c++11 -O3
 LDFLAGS  = -lpthread
 INCFLAGS = -I$(BOOST_HOME)/include
 SRC      = $(wildcard *.cpp)
 OBJS     = $(patsubst %.cpp,%.o,$(SRC))
-EXEC     = sortingtest.out
+TEST     = sortingtest.out
+EXP      = sortingexp.out
 
-$(EXEC) : $(OBJS) ../preprocessing/loaddata.o ../timer/timer.o
+all : $(TEST) $(EXP)
+
+$(TEST) : sortingtest.o sorting.o ../preprocessing/loaddata.o ../timer/timer.o
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+$(EXP) : sortingexp.o sorting.o ../preprocessing/loaddata.o ../timer/timer.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 %.o : %.cpp
@@ -15,5 +21,6 @@ $(EXEC) : $(OBJS) ../preprocessing/loaddata.o ../timer/timer.o
 .PHONY : clean
 
 clean :
-	rm -vf $(EXEC)
+	rm -vf $(TEST)
+	rm -vf $(EXP)
 	rm -vf $(OBJS)
