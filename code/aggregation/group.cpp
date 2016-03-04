@@ -5,7 +5,7 @@ using namespace std;
 
 pthread_mutex_t mutex;
 // keep track of location of name & count of rating in output dataset
-unordered_map<string, pair<int, int>> look_up;
+unordered_map<long long, pair<int, int>> look_up;
 
 
 struct ThreadArg{
@@ -28,14 +28,31 @@ public:
 static void* groupThread(void* args){
     ThreadArg* arg = static_cast<ThreadArg*>(args);
 	// map from name to pair of rating & count in local dataset
-	unordered_map<string, pair<double, int>> local;
+	unordered_map<long long, pair<double, int>> local;
 	int &g_idx = arg->g_idx;
 	int &t_idx = arg->t_idx;
 	
 	// perform group by and aggregation in local dataset, keep the result in a hash table
 	for(auto it = arg->beginIt; it != arg->endIt; ++it){
-		string cur_name = boost::get<string>(it->at(g_idx));
-		double cur_rating = boost::get<long long>(it->at(t_idx));
+		long long cur_name;
+		/*try{
+			cur_name = boost::get<string>(it->at(g_idx));
+		}catch(const boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_get> >&){
+			try {
+				cur_name = to_string(boost::get<double>(it->at(g_idx)));
+			}
+			catch(const boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_get> >&){
+				cur_name = to_string(boost::get<long long>(it->at(g_idx)));
+			}
+		}*/
+		cur_name = boost::get<long long>(it->at(g_idx));
+		double cur_rating;
+		
+		try{
+			cur_rating = boost::get<double>(it->at(t_idx));
+		}catch(const boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_get> >&){
+			cur_rating = boost::get<long long>(it->at(t_idx));
+		}
 		
 		if(local.find(cur_name) == local.end()){
 			local.insert({cur_name, {cur_rating, 1}});
