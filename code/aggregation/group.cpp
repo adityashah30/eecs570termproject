@@ -97,6 +97,7 @@ static void* groupThread(void* args){
 
  void group(Dataset& out, Dataset& in, int group_idx, int tar_idx, int numThreads){
 	 
+	out.clear(); 
     pthread_t* threads = new pthread_t[numThreads];
     ThreadArg* args = new ThreadArg[numThreads];
 

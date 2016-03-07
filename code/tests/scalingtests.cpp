@@ -26,13 +26,13 @@ int main()
 
     int expCount = 100;
 
-    cout << "Conduction tests on Aggregation..." << endl;
+    cout << "Conducting tests on Aggregation..." << endl;
     testAggregation(output, input, expCount);
     cout << "Tests on Aggregation complete..." << endl;
-    cout << "Conduction tests on Selection..." << endl;
+    cout << "Conducting tests on Selection..." << endl;
     testSelection(output, input, expCount);
     cout << "Tests on Selection complete..." << endl;
-    cout << "Conduction tests on Sorting..." << endl;
+    cout << "Conducting tests on Sorting..." << endl;
     testSorting(output, input, expCount);
     cout << "Tests on Sorting complete..." << endl;
 

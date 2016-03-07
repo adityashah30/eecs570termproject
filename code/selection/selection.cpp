@@ -28,7 +28,7 @@ public:
 
 void selData(Dataset& out, Dataset& in, int index, Field constraint, int numThreads)
 {
-
+    out.clear();
     pthread_t* threads = new pthread_t[numThreads];
     ThreadArg* args = new ThreadArg[numThreads];
 
