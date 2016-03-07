@@ -1,4 +1,34 @@
 set terminal pngcairo
+set output "aggregationThreadScaling.png"
+set logscale x 2
+set xlabel "NumThreads"
+set ylabel "Time (ms)"
+set title "Time to aggregate vs NumThreads"
+plot "aggregationThreadScalingResults.txt" u 1:2 w linespoints notitle
+
+set terminal pngcairo
+set output "aggregationSizeScaling.png"
+set xlabel "Dataset Fraction"
+set ylabel "Time (ms)"
+set title "Time to aggregate vs Dataset Fraction for optimal NumThreads"
+plot "aggregationSizeScalingResults.txt" u 1:2 w linespoints notitle
+
+set terminal pngcairo
+set output "selectionThreadScaling.png"
+set logscale x 2
+set xlabel "NumThreads"
+set ylabel "Time (ms)"
+set title "Time to select vs NumThreads"
+plot "selectionThreadScalingResults.txt" u 1:2 w linespoints notitle
+
+set terminal pngcairo
+set output "selectionSizeScaling.png"
+set xlabel "Dataset Fraction"
+set ylabel "Time (ms)"
+set title "Time to select vs Dataset Fraction for optimal NumThreads"
+plot "selectionSizeScalingResults.txt" u 1:2 w linespoints notitle
+
+set terminal pngcairo
 set output "sortingThreadScaling.png"
 set logscale x 2
 set xlabel "NumThreads"
