@@ -15,3 +15,5 @@ typedef std::vector<Field> Record;
 typedef std::vector<Record> Dataset;
 
 void loadData(Dataset& data, std::string filename);
+
+void extractSmallDS(Dataset& smallDataset, Dataset& originalDataset, double fraction);

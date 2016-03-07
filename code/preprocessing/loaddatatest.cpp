@@ -49,6 +49,13 @@ int main()
     Record firstRec4 = {field41, field42, field43, field44};
     assert(data[0] == firstRec4);
     cout << "tags pass" << endl;
+
+    Dataset data25;
+    double fraction = 0.25;
+    extractSmallDS(data25, data, fraction);
+    int newSize = data25.size();
+    int newActualSize = data.size()*fraction;
+    assert(newSize == newActualSize);
     
     return 0;
 }

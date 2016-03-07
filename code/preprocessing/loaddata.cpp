@@ -45,3 +45,11 @@ void loadData(Dataset& data, std::string filename)
     }
     in.close();
 }
+
+void extractSmallDS(Dataset& smallDataset, Dataset& originalDataset, double fraction)
+{
+    smallDataset.clear();
+    int newSize = originalDataset.size()*fraction;
+    smallDataset.resize(newSize);
+    std::copy(originalDataset.begin(), originalDataset.begin()+newSize, smallDataset.begin());
+}
