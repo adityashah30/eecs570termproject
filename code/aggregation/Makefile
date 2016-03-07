@@ -1,7 +1,7 @@
 CC       = g++
-CXXFLAGS = -std=c++11
+CXXFLAGS = -std=c++11 -O3
 LDFLAGS  = -lpthread
-INCFLAGS = -I/home/wangyut/eecs570/boost_1_60_0/jb/boost/include
+INCFLAGS = -I$(BOOST_HOME)/include
 SRC      = $(wildcard *.cpp)
 OBJS     = $(patsubst %.cpp,%.o,$(SRC))
 EXEC     = grouptest.out
