@@ -1,0 +1,14 @@
+set terminal pngcairo
+set output "sortingThreadScaling.png"
+set logscale x 2
+set xlabel "NumThreads"
+set ylabel "Time (ms)"
+set title "Time to sort vs NumThreads"
+plot "sortingThreadScalingResults.txt" u 1:2 w linespoints notitle
+
+set terminal pngcairo
+set output "sortingSizeScaling.png"
+set xlabel "Dataset Fraction"
+set ylabel "Time (ms)"
+set title "Time to sort vs Dataset Fraction for optimal NumThreads"
+plot "sortingSizeScalingResults.txt" u 1:2 w linespoints notitle

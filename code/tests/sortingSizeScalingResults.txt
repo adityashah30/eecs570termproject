@@ -1,0 +1,5 @@
+#Fraction Time (Optimal numThreads: 2)
+0.25 3868
+0.5 4267
+0.75 6030
+1.0 4754
