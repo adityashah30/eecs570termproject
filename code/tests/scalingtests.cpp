@@ -6,6 +6,7 @@
 #include <cassert>
 #include <limits>
 #include <fstream>
+#include <cmath>
 
 using namespace std;
 
@@ -50,7 +51,9 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
     int optimalNumThreads = 2;
     long long optimalTime = numeric_limits<long long>::max();
 
-    int minNumThreads = 2;
+    long long singleThreadTime = 0;
+
+    int minNumThreads = 1;
     int maxNumThreads = 16;
 
     ofstream out(threadResultFile);
@@ -69,6 +72,13 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
+        if(numThreads == 1)
+        {
+            singleThreadTime = expTime;
+        }
+
+        long long idealTime = singleThreadTime/numThreads;
+
         if(optimalTime > expTime)
         {
             optimalTime = expTime;
@@ -76,8 +86,8 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         }
 
         cout << "Time to aggregate data on " << numThreads << " threads : " 
-             << expTime << endl;
-        out << numThreads << " " << expTime << endl;
+             << expTime << "; Ideal Time: " << idealTime << endl;
+        out << numThreads << " " << expTime << " " << idealTime << endl;
     }
 
     out.close();
@@ -105,15 +115,17 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
+        long long idealTime = fractions[i]*optimalTime;
+
         cout << "Time to aggregate data on fraction: " << fractions[i] 
              << " using optimal numThread: " << optimalNumThreads
-             << " is : " << expTime << endl;
-        out << fractions[i] << " " << expTime << endl;
+             << " is : " << expTime << "; Ideal Time: " << idealTime << endl;
+        out << fractions[i] << " " << expTime << " " << idealTime << endl;
     }
     cout << "Time to aggregate data on fraction: 1.0"
          << " using optimal numThread: " << optimalNumThreads
-         << " is : " << optimalTime << endl;
-    out << "1.0 " << optimalTime << endl;
+         << " is : " << optimalTime << "; Ideal Time: " << idealTime << endl;
+    out << "1.0 " << optimalTime << " " << optimalTime << endl;
 
     out.close();
 }
@@ -130,7 +142,9 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
     int optimalNumThreads = 2;
     long long optimalTime = numeric_limits<long long>::max();
 
-    int minNumThreads = 2;
+    long long singleThreadTime = 0;
+
+    int minNumThreads = 1;
     int maxNumThreads = 16;
 
     ofstream out(threadResultFile);
@@ -149,6 +163,13 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
+        if(numThreads == 1)
+        {
+            singleThreadTime = expTime;
+        }
+
+        long long idealTime = singleThreadTime/numThreads;
+
         if(optimalTime > expTime)
         {
             optimalTime = expTime;
@@ -156,8 +177,8 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         }
 
         cout << "Time to select data on " << numThreads << " threads : " 
-             << expTime << endl;
-        out << numThreads << " " << expTime << endl;
+             << expTime << "; Ideal Time: " << idealTime << endl;
+        out << numThreads << " " << expTime << " " << idealTime << endl;
     }
 
     out.close();
@@ -185,15 +206,17 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
+        long long idealTime = fractions[i]*optimalTime;
+
         cout << "Time to select data on fraction: " << fractions[i] 
              << " using optimal numThread: " << optimalNumThreads
-             << " is : " << expTime << endl;
-        out << fractions[i] << " " << expTime << endl;
+             << " is : " << expTime << "; Ideal Time: " << idealTime << endl;
+        out << fractions[i] << " " << expTime << " " << idealTime << endl;
     }
     cout << "Time to select data on fraction: 1.0"
          << " using optimal numThread: " << optimalNumThreads
-         << " is : " << optimalTime << endl;
-    out << "1.0 " << optimalTime << endl;
+         << " is : " << optimalTime << "; Ideal Time: " << idealTime << endl;
+    out << "1.0 " << optimalTime << " " << optimalTime << endl;
 
     out.close();
 }
@@ -208,7 +231,9 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
     int optimalNumThreads = 2;
     long long optimalTime = numeric_limits<long long>::max();
 
-    int minNumThreads = 2;
+    long long singleThreadTime = 0;
+
+    int minNumThreads = 1;
     int maxNumThreads = 16;
 
     ofstream out(threadResultFile);
@@ -227,6 +252,13 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
+        if(numThreads == 1)
+        {
+            singleThreadTime = expTime;
+        }
+
+        long long idealTime = singleThreadTime/numThreads;
+
         if(optimalTime > expTime)
         {
             optimalTime = expTime;
@@ -234,8 +266,8 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
         }
 
         cout << "Time to sort data on " << numThreads << " threads : " 
-             << expTime << endl;
-        out << numThreads << " " << expTime << endl;
+             << expTime << "; Ideal Time: " << idealTime << endl;
+        out << numThreads << " " << expTime << " " << idealTime << endl;
     }
 
     out.close();
@@ -263,15 +295,17 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
-        cout << "Time to sort data fraction: " << fractions[i] 
+        long long idealTime = fractions[i]*optimalTime;
+
+        cout << "Time to sort data on fraction: " << fractions[i] 
              << " using optimal numThread: " << optimalNumThreads
-             << " is : " << expTime << endl;
-        out << fractions[i] << " " << expTime << endl;
+             << " is : " << expTime << "; Ideal Time: " << idealTime << endl;
+        out << fractions[i] << " " << expTime << " " << idealTime << endl;
     }
     cout << "Time to sort data on fraction: 1.0"
          << " using optimal numThread: " << optimalNumThreads
-         << " is : " << optimalTime << endl;
-    out << "1.0 " << optimalTime << endl;
+         << " is : " << optimalTime << "; Ideal Time: " << idealTime << endl;
+    out << "1.0 " << optimalTime << " " << optimalTime << endl;
 
     out.close();
 }
