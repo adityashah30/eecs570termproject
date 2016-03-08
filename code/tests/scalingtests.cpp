@@ -24,11 +24,11 @@ int main()
     loadData(input, filename);
     cout << "Data loaded" << endl;
 
-    int expCount = 1;
+    int expCount = 20;
 
-    // cout << "Conducting tests on Aggregation..." << endl;
-    // testAggregation(output, input, expCount);
-    // cout << "Tests on Aggregation complete..." << endl;
+    cout << "Conducting tests on Aggregation..." << endl;
+    testAggregation(output, input, expCount);
+    cout << "Tests on Aggregation complete..." << endl;
     cout << "Conducting tests on Selection..." << endl;
     testSelection(output, input, expCount);
     cout << "Tests on Selection complete..." << endl;
