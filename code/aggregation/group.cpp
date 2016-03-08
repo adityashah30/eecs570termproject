@@ -4,8 +4,8 @@
 using namespace std;
 
 pthread_mutex_t mutex;
-// keep track of location of name & count of rating in output dataset
-unordered_map<long long, pair<int, int>> look_up;
+// keep sum of all the ratings & count of rating 
+unordered_map<long long, pair<double, int>> look_up;
 
 
 struct ThreadArg{
@@ -34,7 +34,7 @@ static void* groupThread(void* args){
 	
 	// perform group by and aggregation in local dataset, keep the result in a hash table
 	for(auto it = arg->beginIt; it != arg->endIt; ++it){
-		long long cur_name;
+		long long cur_id;
 		/*try{
 			cur_name = boost::get<string>(it->at(g_idx));
 		}catch(const boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_get> >&){
@@ -45,7 +45,7 @@ static void* groupThread(void* args){
 				cur_name = to_string(boost::get<long long>(it->at(g_idx)));
 			}
 		}*/
-		cur_name = boost::get<long long>(it->at(g_idx));
+		cur_id = boost::get<long long>(it->at(g_idx));
 		double cur_rating;
 		
 		try{
@@ -54,41 +54,31 @@ static void* groupThread(void* args){
 			cur_rating = boost::get<long long>(it->at(t_idx));
 		}
 		
-		if(local.find(cur_name) == local.end()){
-			local.insert({cur_name, {cur_rating, 1}});
+		if(local.find(cur_id) == local.end()){
+			local.insert({cur_id, {cur_rating, 1}});
 		}else{
-			auto& cur = local[cur_name];
+			auto& cur = local[cur_id];
 			cur.first += cur_rating;
 			cur.second++;
 		}
 	}
 	
-	// populate into out
+	// populate into hash table
 	pthread_mutex_lock(&mutex);
 	for(auto it = local.begin(); it != local.end(); ++it){
-		//string cur_name = it->first;
 		double& cur_rating = ((it->second).first);
 		int& cur_cnt = (it->second).second;
 		
-		// if it's a new data, push it into output dataset
+		// if it's a new data, push it into hash table
 		if(look_up.find(it->first) == look_up.end()){
-			Record record;
-			
-			record.push_back(it->first);
-			record.push_back(cur_rating/cur_cnt);
-			
-			look_up[it->first] = {arg->outptr->size(), cur_cnt};
-			arg->outptr->push_back(record);	
+			look_up[it->first] = {cur_rating, cur_cnt};
 		}
-		// if it's already exist in output dataset, update rating
+		// if it's already exist in hash table, update rating and count
 		else{
-			int& cur_pos = look_up[it->first].first;
+			double& prev_rating = look_up[it->first].first;
 			int& prev_cnt = look_up[it->first].second;
-			Field& prev_rating = arg->outptr->at(cur_pos).at(1);
-
-			// update rating
-			prev_rating = (boost::get<double>(prev_rating) * prev_cnt + cur_rating) / (prev_cnt + cur_cnt);
 			
+			prev_rating += cur_rating;
 			prev_cnt += cur_cnt;
 		}
 	}
@@ -97,7 +87,6 @@ static void* groupThread(void* args){
 
  void group(Dataset& out, Dataset& in, int group_idx, int tar_idx, int numThreads){
 	 
-	out.clear(); 
     pthread_t* threads = new pthread_t[numThreads];
     ThreadArg* args = new ThreadArg[numThreads];
 
@@ -114,6 +103,16 @@ static void* groupThread(void* args){
 	
 	for(int i = 0; i < numThreads; ++i){
 		pthread_join(threads[i], NULL);
+	}
+	
+	// Calculate average
+	for(auto it = look_up.begin(); it != look_up.end(); ++it){
+		Record record;
+		
+		record.push_back(it->first);
+		record.push_back(it->second.first / it->second.second);
+		
+		out.push_back(record);
 	}
 	
 	delete[] threads;
