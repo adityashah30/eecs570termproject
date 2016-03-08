@@ -124,7 +124,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
     }
     cout << "Time to aggregate data on fraction: 1.0"
          << " using optimal numThread: " << optimalNumThreads
-         << " is : " << optimalTime << "; Ideal Time: " << idealTime << endl;
+         << " is : " << optimalTime << "; Ideal Time: " << optimalTime << endl;
     out << "1.0 " << optimalTime << " " << optimalTime << endl;
 
     out.close();
@@ -215,7 +215,7 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
     }
     cout << "Time to select data on fraction: 1.0"
          << " using optimal numThread: " << optimalNumThreads
-         << " is : " << optimalTime << "; Ideal Time: " << idealTime << endl;
+         << " is : " << optimalTime << "; Ideal Time: " << optimalTime << endl;
     out << "1.0 " << optimalTime << " " << optimalTime << endl;
 
     out.close();
@@ -252,12 +252,17 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
+        long long idealTime = 0;
+
         if(numThreads == 1)
         {
             singleThreadTime = expTime;
+            idealTime = singleThreadTime;
         }
-
-        long long idealTime = singleThreadTime/numThreads;
+        else
+        {
+            idealTime = singleThreadTime/log2(numThreads);
+        }
 
         if(optimalTime > expTime)
         {
@@ -304,7 +309,7 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
     }
     cout << "Time to sort data on fraction: 1.0"
          << " using optimal numThread: " << optimalNumThreads
-         << " is : " << optimalTime << "; Ideal Time: " << idealTime << endl;
+         << " is : " << optimalTime << "; Ideal Time: " << optimalTime << endl;
     out << "1.0 " << optimalTime << " " << optimalTime << endl;
 
     out.close();
