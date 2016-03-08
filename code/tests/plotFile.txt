@@ -5,6 +5,7 @@ set xlabel "NumThreads"
 set ylabel "Time (ms)"
 set title "Time to select vs NumThreads"
 plot "selectionThreadScalingResults.txt" u 1:2 w linespoints title "Observed Scaling", "selectionThreadScalingResults.txt" u 1:3 w linespoints title "Ideal Scaling"
+unset logscale x
 
 set terminal pdf
 set output "selectionSizeScaling.pdf"
@@ -20,6 +21,7 @@ set xlabel "NumThreads"
 set ylabel "Time (ms)"
 set title "Time to sort vs NumThreads"
 plot "sortingThreadScalingResults.txt" u 1:2 w linespoints title "Observed Scaling", "sortingThreadScalingResults.txt" u 1:3 w linespoints title "Ideal Scaling"
+unset logscale x
 
 set terminal pdf
 set output "sortingSizeScaling.pdf"
@@ -35,6 +37,7 @@ set xlabel "NumThreads"
 set ylabel "Time (ms)"
 set title "Time to aggregate vs NumThreads"
 plot "aggregationThreadScalingResults.txt" u 1:2 w linespoints title "Observed Scaling", "aggregationThreadScalingResults.txt" u 1:3 w linespoints title "Ideal Scaling"
+unset logscale x
 
 set terminal pdf
 set output "aggregationSizeScaling.pdf"

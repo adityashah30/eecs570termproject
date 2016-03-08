@@ -6,7 +6,6 @@
 #include <cassert>
 #include <limits>
 #include <fstream>
-#include <cmath>
 
 using namespace std;
 
@@ -252,17 +251,12 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
-        long long idealTime = 0;
-
         if(numThreads == 1)
         {
             singleThreadTime = expTime;
-            idealTime = singleThreadTime;
         }
-        else
-        {
-            idealTime = singleThreadTime/log2(numThreads);
-        }
+
+        long long idealTime = singleThreadTime/numThreads;
 
         if(optimalTime > expTime)
         {
