@@ -108,7 +108,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
-            group(output, input, group_idx, target_idx, optimalNumThreads);
+            group(output, smallDS, group_idx, target_idx, optimalNumThreads);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
