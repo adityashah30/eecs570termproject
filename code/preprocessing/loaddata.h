@@ -8,12 +8,42 @@
 #include <vector>
 #include <string>
 #include <cassert>
-#include "boost/variant.hpp"
 
-typedef boost::variant<long long, double, std::string> Field;
-typedef std::vector<Field> Record;
+struct Record
+{
+    int userId;
+    int movieId;
+    double rating;
+    long long timestamp;
+
+    Record() : userId(0), movieId(0), rating(0.0), timestamp(0)
+    {
+    }
+
+    Record(int uid, int mid, double r, long long ts)
+    : userId(uid), movieId(mid), rating(r), timestamp(ts)
+    {
+    }
+
+    Record(const Record& other)
+    : userId(other.userId), movieId(other.movieId), 
+      rating(other.rating), timestamp(other.timestamp)
+    {
+    }
+
+    bool operator==(const Record& other)
+    {
+        return (userId == other.userId) &&
+               (movieId == other.movieId) &&
+               (rating == other.rating) &&
+               (timestamp == other.timestamp);
+    }
+};
+
 typedef std::vector<Record> Dataset;
 
-void loadData(Dataset& data, std::string filename);
+void loadData(Dataset& data);
+
+void duplicateDS(Dataset& bigDataset, Dataset& originalDataset, double fraction);
 
 void extractSmallDS(Dataset& smallDataset, Dataset& originalDataset, double fraction);
