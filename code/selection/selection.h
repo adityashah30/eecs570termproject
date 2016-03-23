@@ -16,7 +16,6 @@
 #include <algorithm>
 #include <cstdlib>
 #include <pthread.h>
-#include "boost/variant.hpp"
 
 //typedef boost::variant<long long, double, std::string> Constraint;
 
@@ -28,4 +27,4 @@
  * @param constrait  The field constraint by which data is to be matched
  * @param numThreads The number of threads spawned
  */
-void selData(Dataset& out, Dataset& in, int index, Field constraint, int numThreads);
+void selData(Dataset& out, Dataset& in, double constraint, int numThreads);

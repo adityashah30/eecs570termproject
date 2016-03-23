@@ -7,53 +7,43 @@ using namespace std;
 
 int main()
 {
-    	string filename;
     	Dataset input;
     	Dataset output;
 
-    	filename = "../../data/ratings25.csv";
-    	int index = 2;
-    	int numThreads = 4;
-    	//boost::variant<long long, double, std::string> cons;
+    	int 	numThreads = 4;
 
-    	long long 	a = 862;
-    	string    	b = "Mark Waters";
-    	double 		c = 3.5;
-
-    	Field cons = c;    
+    	double 	cons = 3.5;
 
     	Timer timer;
     	timer.startTimer();
-    	loadData(input, filename);
+    	loadData(input);
     	timer.stopTimer();
     	std::cout << "Time to load data: " << timer.getElapsedTime() << std::endl;
 
 
 	timer.startTimer();
-    	selData(output, input, index, cons, numThreads);
+    	selData(output, input, cons, numThreads);
     	timer.stopTimer();
     	std::cout << "Time to select data on " << numThreads << " threads : " 
            	  << timer.getElapsedTime() << std::endl;
 	
     	cout << " Output  Size: " << output.size() << endl; 
-/*	
+	
+    	cout << " Input Size: " << input.size() << endl; 
 
+/*
     for (int i=0; i < input.size(); i++) {
-	  	for (int j=0; j < input[i].size();j++) {
-		  cout << input[i][j] << ' ';
-		}
-		  cout << endl;
+	   	cout << input[i].userId << ' ' << input[i].movieId << ' ' << input[i].rating << ' ' << input[i].timestamp;
+	   	cout << endl;
     } 
     
-    cout << " Output  Size: " << output.size() << endl; 
+    cout << " Output Size: " << output.size() << endl; 
 
     for (int i=0; i < output.size(); i++) {
-	  	for (int j=0; j < output[i].size();j++) {
-		  cout << output[i][j] << ' ';
-		}
-	  cout <<  endl;
+	   	cout << output[i].userId << ' ' << output[i].movieId << ' ' << output[i].rating << ' ' << output[i].timestamp;
+		cout <<  endl;
     } 
-
-*/  
+*/
+  
     return 0;
 }

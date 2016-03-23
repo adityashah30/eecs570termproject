@@ -2,117 +2,168 @@
 #include <iostream>
 
 static void* selDataThread(void* args);
+static void* mergeDataThread(void* args);
 
-struct ThreadArg
+struct SelThreadArg
 {
 public:
     	// Input
 	Dataset::iterator 	beginIt;
     	Dataset::iterator 	endIt;
-    	int 			index;
-    	Field			constraint;
+    	double			constraint;
     	// Result
 	Dataset			tmp_result;		
 
 public:
-    void setArgs(Dataset::iterator bIt, 
-                 Dataset::iterator eIt, 
-		 int idx, Field cst)
+    void setArgs( Dataset::iterator bIt, 
+                  Dataset::iterator eIt, 
+		  double cst)
     {
         beginIt		= bIt;
         endIt 		= eIt;
-        index 		= idx;
 	constraint	= cst;
     }
 };
 
-void selData(Dataset& out, Dataset& in, int index, Field constraint, int numThreads)
+struct MergeThreadArg
 {
-    out.clear();
-    pthread_t* threads = new pthread_t[numThreads];
-    ThreadArg* args = new ThreadArg[numThreads];
-
-    int chunkSize = in.size()/numThreads;
-    int rc = 0;
-
-    // Thread Creation
-    for(int i = 0; i < numThreads - 1; i++)
+public:
+	// Input
+	Dataset			*merge_result;
+	Dataset::iterator 	beginIt;
+    	Dataset::iterator 	endIt;
+public:
+    void setArgs( Dataset *tmp_result,
+                  Dataset::iterator bIt, 
+                  Dataset::iterator eIt 
+		)
     {
-        args[i].setArgs( in.begin() + chunkSize * i, 
-                         in.begin() + chunkSize * (i + 1), 
-                         index, constraint);
-
-	rc = pthread_create( &threads[i], NULL, 
-                             selDataThread, (void*)&args[i]);
-
-	if(rc)
-        {
-            std::cerr << "Error: Return code from pthread_create on threadId: " 
-                      << i << " is " << rc << std::endl;
-            exit(EXIT_FAILURE);
-        }
+	    merge_result = tmp_result;
+            beginIt = bIt;
+            endIt = eIt;
     }
+};
 
-    // Thread Creation for Last One
-    args[numThreads-1].setArgs( in.begin() + chunkSize * (numThreads - 1),
-                               	in.end(), index, constraint);
+void selData(Dataset& out, Dataset& in, double constraint, int numThreads)
+{
+    	out.clear();
+    	pthread_t* threads = new pthread_t[numThreads];
+    	SelThreadArg* sArgs = new SelThreadArg[numThreads];
+	MergeThreadArg* mArgs = new MergeThreadArg[numThreads];
+    	int* beginIndex = new int[numThreads];
+    	int* endIndex = new int[numThreads];
 
-    rc = pthread_create( &threads[numThreads-1], NULL, 
-                         selDataThread, (void*)&args[numThreads-1]);
+    	int chunkSize = in.size()/numThreads;
+	int rc = 0;
 
-    if(rc)
-    {
-        std::cerr << "Error: Return code from pthread_create on threadId: " 
-                  << numThreads-1 << " is " << rc << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    	for(int i=0; i < numThreads - 1; i++)
+    	{
+	    beginIndex[i] = chunkSize * i;
+	    endIndex[i] = chunkSize * (i+1);
+	}
+	beginIndex[numThreads-1] = chunkSize*(numThreads-1);
+	endIndex[numThreads-1] = in.size();
 
-    for(int i = 0; i < numThreads; i++)
-    {
-        rc = pthread_join(threads[i], NULL);
-        if(rc)
-        {
-            std::cerr << "Error: Return code from pthread_create on threadId: " 
-                      << i << " is " << rc << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
 
-    for(int i = 0; i < numThreads; i++)
-    {
-	/*	    if((args[i].tmp_result).size()!=0)
-	    {
-		// For Debug
-		// std::cout << "find a match" << std::endl;
-		for(auto it=(args[i].tmp_result).begin(); it!= (args[i].tmp_result).end(); it++)  
-    		{
-			out.push_back(*it);
+    	// Selection Phase
+    	for(int i = 0; i < numThreads; i++)
+    	{
+        	sArgs[i].setArgs( in.begin() + beginIndex[i], 
+                                  in.begin() + endIndex[i], 
+                                  constraint);
+
+		rc = pthread_create( &threads[i], NULL, 
+                             	     selDataThread, (void*)&sArgs[i]);
+
+		if(rc)
+        	{
+            	std::cerr << "Error: Return code from pthread_create on threadId: " 
+                 	  << i << " is " << rc << std::endl;
+            	exit(EXIT_FAILURE);
+        	}
+    	}
+
+    	for(int i = 0; i < numThreads; i++)
+    	{
+        	rc = pthread_join(threads[i], NULL);
+        	if(rc)
+        	{
+            	std::cerr << "Error: Return code from pthread_create on threadId: " 
+            	          << i << " is " << rc << std::endl;
+            	exit(EXIT_FAILURE);
+        	}
+    	}
+
+	// Merge Phase
+	int numChunks = numThreads >> 1;
+	for(int stride = 1; stride < numThreads; stride <<= 1, numChunks >>= 1)
+	{	
+		for(int i=0; i < numChunks; i++)
+		{
+			int idx1 = stride*(2*i);
+			int idx2 = stride*(2*i+1);
+				
+			mArgs[i].setArgs( &(sArgs[idx1].tmp_result), 
+				 	  (sArgs[idx2].tmp_result).begin(),
+					  (sArgs[idx2].tmp_result).end());
+
+            		rc = pthread_create(&threads[i], NULL, 
+                                            mergeDataThread, (void*)&mArgs[i]);
+            		if(rc)
+            		{
+                		std::cerr << "Error: Return code from pthread_create on threadId: " 
+                        	          << i << " is " << rc << std::endl;
+                		exit(EXIT_FAILURE);
+        		}
 		}
-	    	
-	    }
-	*/
-	    out.insert(out.end(), (args[i].tmp_result).begin(), (args[i].tmp_result).end()); 
-    }
+	
+		for(int i=0; i < numChunks; i++)
+        	{
+        		rc = pthread_join(threads[i], NULL);
+          		if(rc)
+            		{	
+                		std::cerr << "Error: Return code from pthread_create on threadId: " 
+                	 		  << i << " is " << rc << std::endl;
+                		exit(EXIT_FAILURE);
+            		}
+        	}
+	}
 
-    delete[] threads;
-    delete[] args;
+	out = sArgs[0].tmp_result;
+	
+/*
+    	for(int i = 0; i < numThreads; i++)
+    	{
+	    out.insert(out.end(), (sArgs[i].tmp_result).begin(), (sArgs[i].tmp_result).end()); 
+    	}
+*/
+	delete[] beginIndex;
+	delete[] endIndex;
+    	delete[] threads;
+    	delete[] sArgs;
+	delete[] mArgs;
 }
-
 
 static void* selDataThread(void* args)
 {
-	ThreadArg* arg = static_cast<ThreadArg*>(args);
+	SelThreadArg* arg = static_cast<SelThreadArg*>(args);
 	
 	for (auto it=arg->beginIt; it!=arg->endIt; it++) 
 	{
-		if ((*it)[arg->index] == arg->constraint)	
-		{
-			
-			// For Debug
-			// std::cout << "thread find a match" << std::endl;
+		if (it->rating == arg->constraint)	
+		{	
 			(arg->tmp_result).push_back(*it);
 		}
 	}
 
     	pthread_exit(NULL);    
 }
+
+static void* mergeDataThread(void* args)
+{
+	MergeThreadArg* arg = static_cast<MergeThreadArg*>(args);
+        (arg->merge_result)->insert( (arg->merge_result)->end(), arg->beginIt, arg->endIt);
+	
+	pthread_exit(NULL);
+}
+
