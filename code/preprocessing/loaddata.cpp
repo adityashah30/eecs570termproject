@@ -1,5 +1,13 @@
 #include "loaddata.h"
 
+bool operator==(const Record& a, const Record& b)
+{
+    return (a.userId == b.userId) &&
+           (a.movieId == b.movieId) &&
+           (a.rating == b.rating) &&
+           (a.timestamp == b.timestamp);
+}
+
 void loadData(Dataset& data)
 {
     data.clear();
@@ -47,7 +55,7 @@ void duplicateDS(Dataset& bigDataset, Dataset& originalDataset, double fraction)
         std::copy(originalDataset.begin(), originalDataset.end(), bigIt);
         bigIt += chunkSize;
     }
-    int remaining = chunkSize*(fraction - (int)fraction);
+    size_t remaining = chunkSize*(fraction - (int)fraction);
     if (remaining > 0)
     {
         std::copy(originalDataset.begin(), originalDataset.begin()+remaining, bigIt);
@@ -57,7 +65,22 @@ void duplicateDS(Dataset& bigDataset, Dataset& originalDataset, double fraction)
 void extractSmallDS(Dataset& smallDataset, Dataset& originalDataset, double fraction)
 {
     smallDataset.clear();
-    int newSize = originalDataset.size()*fraction;
+    size_t newSize = originalDataset.size()*fraction;
     smallDataset.resize(newSize);
     std::copy(originalDataset.begin(), originalDataset.begin()+newSize, smallDataset.begin());
+}
+
+void nearestPowerOf2DS(Dataset& powerDataset, Dataset& originalDataset)
+{
+    size_t nearestPowerOf2 = 1;
+    size_t size = originalDataset.size();
+    while(nearestPowerOf2 < size)
+    {
+        nearestPowerOf2 <<= 1;
+    }
+    nearestPowerOf2 >>= 1;
+
+    powerDataset.clear();
+    powerDataset.resize(nearestPowerOf2);
+    std::copy(originalDataset.begin(), originalDataset.begin()+nearestPowerOf2, powerDataset.begin());
 }
