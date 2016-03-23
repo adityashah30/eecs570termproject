@@ -3,6 +3,8 @@
 static void* sortDataThread(void* args);
 static void* mergeDataThread(void* args);
 
+static pthread_barrier_t barr;
+
 class SortComparator
 {
 public:
@@ -12,7 +14,20 @@ public:
     }
     bool operator() (const Record& rec1, const Record& rec2)
     {
-        return rec1.at(index) < rec2.at(index);
+        switch(index)
+        {
+            case 0:
+                return rec1.userId < rec2.userId;
+            case 1:
+                return rec1.movieId < rec2.movieId;
+            case 2:
+                return rec1.rating < rec2.rating;
+            case 3:
+                return rec1.timestamp < rec2.timestamp;
+            default:
+                return rec1.rating < rec2.rating;
+        }
+
     }
 private:
     int index;
@@ -21,38 +36,19 @@ private:
 struct SortThreadArg
 {
 public:
-    Dataset::iterator beginIt;
-    Dataset::iterator endIt;
+    int beginIdx;
+    int endIdx;
     int index;
+    Dataset::iterator out;
+    size_t size;
 public:
-    void setArgs(Dataset::iterator bIt, 
-                 Dataset::iterator eIt, int idx)
+    void setArgs(Dataset::iterator o, size_t s,
+                 int bIdx, int eIdx, int idx)
     {
-        beginIt = bIt;
-        endIt = eIt;
-        index = idx;
-    }
-};
-
-struct MergeThreadArg
-{
-public:
-    Dataset::iterator beginIt1;
-    Dataset::iterator endIt1;
-    Dataset::iterator beginIt2;
-    Dataset::iterator endIt2;
-    int index;
-public:
-    void setArgs(Dataset::iterator bIt1, 
-                 Dataset::iterator eIt1,
-                 Dataset::iterator bIt2, 
-                 Dataset::iterator eIt2,
-                 int idx)
-    {
-        beginIt1 = bIt1;
-        endIt1 = eIt1;
-        beginIt2 = bIt2;
-        endIt2 = eIt2;
+        out = o;
+        size = s;
+        beginIdx = bIdx;
+        endIdx = eIdx;
         index = idx;
     }
 };
@@ -63,7 +59,6 @@ void sortData(Dataset& out, Dataset& in, int index, int numThreads)
 
     pthread_t* threads = new pthread_t[numThreads];
     SortThreadArg* sArgs = new SortThreadArg[numThreads];
-    MergeThreadArg* mArgs = new MergeThreadArg[numThreads];
     int* beginIndex = new int[numThreads];
     int* endIndex = new int[numThreads];
 
@@ -78,12 +73,16 @@ void sortData(Dataset& out, Dataset& in, int index, int numThreads)
     beginIndex[numThreads-1] = chunkSize*(numThreads-1);
     endIndex[numThreads-1] = out.size();
 
-    // Sort Phase
+    if(pthread_barrier_init(&barr, NULL, numThreads))
+    {
+        std::cerr << "Could not create a barrier" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     for(int i=0; i<numThreads; i++)
     {
-        sArgs[i].setArgs(out.begin() + beginIndex[i], 
-                        out.begin() + endIndex[i], 
-                        index);
+        sArgs[i].setArgs(out.begin(), out.size(),
+                         beginIndex[i], endIndex[i], index);
         rc = pthread_create(&threads[i], NULL, 
                             sortDataThread, (void*)&sArgs[i]);
         if(rc)
@@ -105,46 +104,8 @@ void sortData(Dataset& out, Dataset& in, int index, int numThreads)
         }
     }
 
-    // Merge Phase
-    int numChunks = numThreads >> 1;
-    for(int stride = 1; stride < numThreads; stride <<= 1, numChunks >>= 1)
-    {
-        for(int i=0; i<numChunks; i++)
-        {
-            int idx1 = stride*(2*i);
-            int idx2 = idx1 + stride - 1;
-            int idx3 = idx2 + 1;
-            int idx4 = idx3 + stride - 1;
-
-            mArgs[i].setArgs(out.begin() + beginIndex[idx1], 
-                             out.begin() + endIndex[idx2],
-                             out.begin() + beginIndex[idx3],
-                             out.begin() + endIndex[idx4],
-                             index);
-            rc = pthread_create(&threads[i], NULL, 
-                                mergeDataThread, (void*)&mArgs[i]);
-            if(rc)
-            {
-                std::cerr << "Error: Return code from pthread_create on threadId: " 
-                          << i << " is " << rc << std::endl;
-                exit(EXIT_FAILURE);
-            }
-        }
-        for(int i=0; i<numChunks; i++)
-        {
-            rc = pthread_join(threads[i], NULL);
-            if(rc)
-            {
-                std::cerr << "Error: Return code from pthread_create on threadId: " 
-                          << i << " is " << rc << std::endl;
-                exit(EXIT_FAILURE);
-            }
-        }
-    }
-
     delete[] beginIndex;
     delete[] endIndex;
-    delete[] mArgs;
     delete[] sArgs;
     delete[] threads;
 }
@@ -154,17 +115,36 @@ static void* sortDataThread(void* args)
     SortThreadArg* arg = static_cast<SortThreadArg*>(args);
 
     SortComparator compObj(arg->index);
-    std::sort(arg->beginIt, arg->endIt, compObj);
 
-    pthread_exit(NULL);
-}
-
-static void* mergeDataThread(void* args)
-{
-    MergeThreadArg* arg = static_cast<MergeThreadArg*>(args);
-
-    SortComparator compObj(arg->index);
-    std::inplace_merge(arg->beginIt1, arg->beginIt2, arg->endIt2, compObj);
+    for(int k=2; k<=arg->size; k<<=1)
+    {
+        for (int j=k>>1; j>0; j=j>>1)
+        {
+            for (int i=arg->beginIdx; i<arg->endIdx; i++)
+            {
+                int mask=i^j;
+                if (mask>i)
+                {
+                    Dataset::iterator it1 = arg->out + i;
+                    Dataset::iterator it2 = arg->out + mask;
+                    if((i&k)==0 && compObj(*it2, *it1))
+                    {
+                        std::iter_swap(it1, it2);
+                    }
+                    if((i&k)!=0 && compObj(*it1, *it2))
+                    {
+                        std::iter_swap(it1, it2);
+                    }
+                }
+            }
+            int rc = pthread_barrier_wait(&barr);
+            if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+            {
+                printf("Could not wait on barrier\n");
+                exit(-1);
+            }
+        }
+    }
 
     pthread_exit(NULL);
 }

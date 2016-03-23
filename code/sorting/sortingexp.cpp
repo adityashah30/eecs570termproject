@@ -8,18 +8,22 @@ using namespace std;
 
 int main()
 {
+    Dataset originalInput;
     Dataset input;
     Dataset output;
 
-    string filename = "../../data/ratings.csv";
     string resultFile = "sortingScalingResults.txt";
 
     int fieldIdx = 2;
-    int expCount = 100;
+    int expCount = 1;
 
     cout << "Loading data" << endl;
-    loadData(input, filename);
+    loadData(originalInput);
     cout << "Data loaded" << endl;
+
+    cout << "Converting to nearest power of 2" << endl;
+    nearestPowerOf2DS(input, originalInput);
+    cout << "Conversion complete" << endl;
 
     ofstream out(resultFile);
     out << "#NumThreads Time" << endl;

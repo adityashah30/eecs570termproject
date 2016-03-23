@@ -33,16 +33,12 @@ int main()
 
 void populateData(Dataset& input, Dataset& expectedOutput)
 {
-    int numRecords = 1000;
+    int numRecords = 1024;
     int offset = 123;
     for(int i=0; i<numRecords; i++)
     {
-        Record inputRecord;
-        Record outputRecord;
-        long long inputField = (i+offset)%numRecords;
-        long long outputField = i;
-        inputRecord.push_back(inputField);
-        outputRecord.push_back(outputField);
+        Record inputRecord = {(i+offset)%numRecords, 0, 0.0, 0};
+        Record outputRecord = {i, 0, 0.0, 0};
         input.push_back(inputRecord);
         expectedOutput.push_back(outputRecord);
     }

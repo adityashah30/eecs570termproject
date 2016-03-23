@@ -11,6 +11,8 @@
  * Sorts the given dataset using the provided field index using given
  * number of threads
  */
+#ifndef SORTING_H
+#define SORTING_H
 
 #include "../preprocessing/loaddata.h"
 #include <algorithm>
@@ -25,3 +27,5 @@
  * @param numThreads The number of threads spawned
  */
 void sortData(Dataset& out, Dataset& in, int index, int numThreads);
+
+#endif

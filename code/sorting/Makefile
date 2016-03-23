@@ -3,9 +3,10 @@ CXXFLAGS = -std=c++11 -O3
 LDFLAGS  = -lpthread
 INCFLAGS = -I$(BOOST_HOME)/include
 SRC      = $(wildcard *.cpp)
-OBJS     = $(patsubst %.cpp,%.o,$(SRC))
+OBJS     = $(SRC:.cpp=.o)
 TEST     = sortingtest.out
 EXP      = sortingexp.out
+BITONIC  = bitonic.out
 
 all : $(TEST) $(EXP)
 
