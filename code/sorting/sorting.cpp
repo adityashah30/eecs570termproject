@@ -36,20 +36,20 @@ private:
 struct SortThreadArg
 {
 public:
-    int beginIdx;
-    int endIdx;
-    int index;
     Dataset::iterator out;
     size_t size;
+    int numThreads;
+    int threadId;
+    int fieldIdx;
 public:
     void setArgs(Dataset::iterator o, size_t s,
-                 int bIdx, int eIdx, int idx)
+                 int nThreads, int tId, int fIdx)
     {
         out = o;
         size = s;
-        beginIdx = bIdx;
-        endIdx = eIdx;
-        index = idx;
+        numThreads = nThreads;
+        threadId = tId;
+        fieldIdx = fIdx;
     }
 };
 
@@ -59,19 +59,8 @@ void sortData(Dataset& out, Dataset& in, int index, int numThreads)
 
     pthread_t* threads = new pthread_t[numThreads];
     SortThreadArg* sArgs = new SortThreadArg[numThreads];
-    int* beginIndex = new int[numThreads];
-    int* endIndex = new int[numThreads];
 
-    int chunkSize = out.size()/numThreads;
     int rc = 0;
-
-    for(int i=0; i<numThreads-1; i++)
-    {
-        beginIndex[i] = chunkSize*i;
-        endIndex[i] = chunkSize*(i+1);
-    }
-    beginIndex[numThreads-1] = chunkSize*(numThreads-1);
-    endIndex[numThreads-1] = out.size();
 
     if(pthread_barrier_init(&barr, NULL, numThreads))
     {
@@ -82,7 +71,7 @@ void sortData(Dataset& out, Dataset& in, int index, int numThreads)
     for(int i=0; i<numThreads; i++)
     {
         sArgs[i].setArgs(out.begin(), out.size(),
-                         beginIndex[i], endIndex[i], index);
+                         numThreads, i, index);
         rc = pthread_create(&threads[i], NULL, 
                             sortDataThread, (void*)&sArgs[i]);
         if(rc)
@@ -104,8 +93,6 @@ void sortData(Dataset& out, Dataset& in, int index, int numThreads)
         }
     }
 
-    delete[] beginIndex;
-    delete[] endIndex;
     delete[] sArgs;
     delete[] threads;
 }
@@ -114,35 +101,53 @@ static void* sortDataThread(void* args)
 {
     SortThreadArg* arg = static_cast<SortThreadArg*>(args);
 
-    SortComparator compObj(arg->index);
+    Dataset::iterator out = arg->out;
+    size_t size = arg->size;
+    int numThreads = arg->numThreads;
+    int threadId = arg->threadId;
+    int fieldIdx = arg->fieldIdx;
 
-    for(int k=2; k<=arg->size; k<<=1)
+    SortComparator compObj(fieldIdx);
+
+    int numComp = size/(2*numThreads);
+
+    for(int ostep = 2; ostep <= size; ostep <<= 1)
     {
-        for (int j=k>>1; j>0; j=j>>1)
+        int halfStep = ostep >> 1;
+        for(int istep = ostep; istep > 1; istep >>= 1)
         {
-            for (int i=arg->beginIdx; i<arg->endIdx; i++)
+            int stride = istep >> 1;
+            for(int i=0; i<numComp; i++)
             {
-                int mask=i^j;
-                if (mask>i)
+                int compId = threadId*numComp + i;
+                int idx1 = (compId/stride)*istep + (compId%stride);
+                int idx2 = idx1 + stride;
+                Dataset::iterator it1 = out + idx1;
+                Dataset::iterator it2 = out + idx2;
+                bool dir = (compId%ostep) < halfStep;
+                if(dir)
                 {
-                    Dataset::iterator it1 = arg->out + i;
-                    Dataset::iterator it2 = arg->out + mask;
-                    if((i&k)==0 && compObj(*it2, *it1))
+                    if(compObj(*it2, *it1))
                     {
                         std::iter_swap(it1, it2);
                     }
-                    if((i&k)!=0 && compObj(*it1, *it2))
+                }
+                else
+                {
+                    if(compObj(*it1, *it2))
                     {
                         std::iter_swap(it1, it2);
                     }
                 }
             }
+            
             int rc = pthread_barrier_wait(&barr);
             if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
             {
-                printf("Could not wait on barrier\n");
-                exit(-1);
+                std::cerr << "Could not wait on barrier" << std::endl;
+                exit(EXIT_FAILURE);
             }
+
         }
     }
 
