@@ -1,6 +1,7 @@
-CC       = g++
-CXXFLAGS = -std=c++11
-LDFLAGS  = -lpthread
+
+CC       = icc
+CXXFLAGS = -std=c++11 -mmic -O3 -qopt-report=5 -qopt-report-phase=vec
+LDFLAGS  = -lpthread 
 INCFLAGS = -I$(BOOST_HOME)/include
 SRC      = $(wildcard *.cpp)
 OBJS     = $(patsubst %.cpp,%.o,$(SRC))
@@ -17,3 +18,4 @@ $(EXEC) : $(OBJS) ../preprocessing/loaddata.o ../timer/timer.o
 clean :
 	rm -vf $(EXEC)
 	rm -vf $(OBJS)
+	rm -vf ../preprocessing/loaddata.o ../timer/timer.o
