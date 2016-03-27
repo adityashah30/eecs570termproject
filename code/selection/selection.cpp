@@ -172,7 +172,7 @@ static void* selDataThread(void* args)
 {
 	SelThreadArg* arg = static_cast<SelThreadArg*>(args);
 	
-	for (auto it=arg->beginIt; it!=arg->endIt; it++) 
+	for (Dataset::iterator it=arg->beginIt; it!=arg->endIt; it++) 
 	{
 		if (it->rating == arg->constraint)	
 		{	
