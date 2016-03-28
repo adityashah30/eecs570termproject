@@ -82,17 +82,24 @@ void group(Dataset& out, Dataset& in, int numThreads){
     pthread_t* threads = new pthread_t[numThreads];
     ThreadArg* args = new ThreadArg[numThreads];
 	MergeArg* margs = new MergeArg[numThreads];
+    int* beginIndex = new int[numThreads];
+    int* endIndex = new int[numThreads];
 
     int chunkSize = in.size()/numThreads;
+
+    for(int i=0; i < numThreads - 1; i++)
+    {
+	    beginIndex[i] = chunkSize * i;
+	    endIndex[i] = chunkSize * (i+1);
+	}
+	beginIndex[numThreads-1] = chunkSize*(numThreads-1);
+	endIndex[numThreads-1] = in.size();
 	
 	for(int i = 0; i < numThreads; ++i){
-        args[i].setArgs(in.begin() + chunkSize*i, in.begin() + chunkSize*(i + 1), &out);
+        args[i].setArgs(in.begin() + beginIndex[i], in.begin() + endIndex[i], &out);
 		
 		pthread_create(&threads[i], NULL, groupThread, (void*)&args[i]);
 	}
-
-    //args[numThreads-1].setArgs(in.begin() + chunkSize*(numThreads-1), in.end(), &out, group_idx, tar_idx);
-	//pthread_create(&threads[numThreads-1], NULL, groupThread, (void*)&args[numThreads-1]);
 	
 	for(int i = 0; i < numThreads; ++i){
 		pthread_join(threads[i], NULL);
@@ -100,17 +107,23 @@ void group(Dataset& out, Dataset& in, int numThreads){
 	
 	
 	// Merge
-	int numChunks = numThreads >> 1;
+	int numChunks = 1;
+	while(numChunks < numThreads)
+		numChunks <<= 1;
+	numChunks >>= 1;
+	
 	for(int stride = 1; stride < numThreads; stride <<= 1, numChunks >>= 1){
 		for(int i = 0; i < numChunks; ++i){
 			int idx1 = 2*i*stride;
 			int idx2 = idx1 + stride;
+			if(idx2 >= numThreads)
+				break;
+			
 			margs[i].setArgs(&args[idx1].local, &args[idx2].local);
 			
 			pthread_create(&threads[i], NULL, mergeThread, (void*)&margs[i]);
 		}
 		for(int i = 0; i < numChunks; ++i)	{
-			//cout << "waiting merge: " << stride << ' ';
 			pthread_join(threads[i], NULL);
 		}
 	}
