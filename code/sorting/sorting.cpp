@@ -109,8 +109,8 @@ static void* sortDataThread(void* args)
 
     SortComparator compObj(fieldIdx);
 
-    int numComp = size/(2*numThreads);
-
+    int numComp = (size+2*numThreads-1)/(2*numThreads);
+    
     for(int ostep = 2; ostep <= size; ostep <<= 1)
     {
         int halfStep = ostep >> 1;
@@ -120,6 +120,12 @@ static void* sortDataThread(void* args)
             for(int i=0; i<numComp; i++)
             {
                 int compId = threadId*numComp + i;
+
+                if(compId >= arg->size>>1)
+                {
+                    break;
+                }
+
                 int idx1 = (compId/stride)*istep + (compId%stride);
                 int idx2 = idx1 + stride;
                 Dataset::iterator it1 = out + idx1;
