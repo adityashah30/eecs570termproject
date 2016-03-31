@@ -11,18 +11,17 @@ public:
 	Dataset::iterator 	beginIt;
     	Dataset::iterator 	endIt;
     	double			constraint;
-	Dataset			*tmp_result;		
+    	// Result
+	Dataset			tmp_result;		
 
 public:
     void setArgs( Dataset::iterator bIt, 
                   Dataset::iterator eIt, 
-		  double cst,
-		  Dataset *tmp_results)
+		  double cst)
     {
         beginIt		= bIt;
         endIt 		= eIt;
 	constraint	= cst;
-	tmp_result 	= tmp_results;
     }
 };
 
@@ -57,8 +56,6 @@ void selData(Dataset& out, Dataset& in, double constraint, int numThreads)
     	int chunkSize = in.size()/numThreads;
 	int rc = 0;
 
-	Dataset  tmp_results[numThreads];
-
     	for(int i=0; i < numThreads - 1; i++)
     	{
 	    beginIndex[i] = chunkSize * i;
@@ -73,87 +70,66 @@ void selData(Dataset& out, Dataset& in, double constraint, int numThreads)
     	{
         	sArgs[i].setArgs( in.begin() + beginIndex[i], 
                                   in.begin() + endIndex[i], 
-                                  constraint, &tmp_results[i]
-				);
+                                  constraint);
 
 		rc = pthread_create( &threads[i], NULL, 
                              	     selDataThread, (void*)&sArgs[i]);
 
-		/*
 		if(rc)
         	{
             	std::cerr << "Error: Return code from pthread_create on threadId: " 
                  	  << i << " is " << rc << std::endl;
             	exit(EXIT_FAILURE);
         	}
-		*/
     	}
 
     	for(int i = 0; i < numThreads; i++)
     	{
         	rc = pthread_join(threads[i], NULL);
-        	/*
-		if(rc)
+        	if(rc)
         	{
             	std::cerr << "Error: Return code from pthread_create on threadId: " 
             	          << i << " is " << rc << std::endl;
             	exit(EXIT_FAILURE);
         	}
-		*/
     	}
 
 	// Merge Phase
-	int numChunks = 1;
-	while(numChunks < numThreads) 
-	{
-		numChunks <<= 1;
-	}
-	numChunks >>= 1;
-
+	int numChunks = numThreads >> 1;
 	for(int stride = 1; stride < numThreads; stride <<= 1, numChunks >>= 1)
 	{	
 		for(int i=0; i < numChunks; i++)
 		{
 			int idx1 = stride*(2*i);
 			int idx2 = stride*(2*i+1);
-		
-			if(idx2 >= numThreads)
-			{
-				break;
-			}
-
-			mArgs[i].setArgs( &tmp_results[idx1], 
-				 	  tmp_results[idx2].begin(),
-					  tmp_results[idx2].end()
-					 );
+				
+			mArgs[i].setArgs( &(sArgs[idx1].tmp_result), 
+				 	  (sArgs[idx2].tmp_result).begin(),
+					  (sArgs[idx2].tmp_result).end());
 
             		rc = pthread_create(&threads[i], NULL, 
                                             mergeDataThread, (void*)&mArgs[i]);
-            		/*
-			if(rc)
+            		if(rc)
             		{
                 		std::cerr << "Error: Return code from pthread_create on threadId: " 
                         	          << i << " is " << rc << std::endl;
                 		exit(EXIT_FAILURE);
         		}
-			*/
 		}
 	
 		for(int i=0; i < numChunks; i++)
         	{
         		rc = pthread_join(threads[i], NULL);
-          		/*
-			if(rc)
+          		if(rc)
             		{	
                 		std::cerr << "Error: Return code from pthread_create on threadId: " 
                 	 		  << i << " is " << rc << std::endl;
                 		exit(EXIT_FAILURE);
             		}
-			*/
         	}
 	}
 
-	out = tmp_results[0];
+	out = sArgs[0].tmp_result;
 	
 /*
     	for(int i = 0; i < numThreads; i++)
@@ -172,11 +148,11 @@ static void* selDataThread(void* args)
 {
 	SelThreadArg* arg = static_cast<SelThreadArg*>(args);
 	
-	for (Dataset::iterator it=arg->beginIt; it!=arg->endIt; it++) 
+	for (auto it=arg->beginIt; it!=arg->endIt; it++) 
 	{
 		if (it->rating == arg->constraint)	
 		{	
-			(arg->tmp_result)->push_back(*it);
+			(arg->tmp_result).push_back(*it);
 		}
 	}
 
