@@ -18,13 +18,11 @@ int main()
     Dataset input;
     Dataset output;
 
-    string filename = "../../data/ratings.csv";
-
     cout << "Loading data" << endl;
-    loadData(input, filename);
+    loadData(input);
     cout << "Data loaded" << endl;
 
-    int expCount = 20;
+    int expCount = 1;
 
     cout << "Conducting tests on Aggregation..." << endl;
     testAggregation(output, input, expCount);
@@ -53,7 +51,11 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
     long long singleThreadTime = 0;
 
     int minNumThreads = 1;
-    int maxNumThreads = 16;
+#ifdef __MIC__
+    int maxNumThreads = 256;
+#else
+    int maxNumThreads = 32;
+#endif
 
     ofstream out(threadResultFile);
     out << "#NumThreads Time" << endl;
@@ -65,7 +67,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
-            group(output, input, group_idx, target_idx, numThreads);
+            group(output, input, numThreads);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
@@ -108,7 +110,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
-            group(output, smallDS, group_idx, target_idx, optimalNumThreads);
+            group(output, smallDS, optimalNumThreads);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
@@ -134,9 +136,7 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
     string threadResultFile = "selectionThreadScalingResults.txt";
     string sizeResultFile = "selectionSizeScalingResults.txt";
 
-    int index = 2;
-    double rating = 3.5;
-    Field cons = rating;
+    double cons = 3.5;
 
     int optimalNumThreads = 2;
     long long optimalTime = numeric_limits<long long>::max();
@@ -144,7 +144,11 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
     long long singleThreadTime = 0;
 
     int minNumThreads = 1;
-    int maxNumThreads = 16;
+#ifdef __MIC__
+    int maxNumThreads = 256;
+#else
+    int maxNumThreads = 32;
+#endif
 
     ofstream out(threadResultFile);
     out << "#NumThreads Time" << endl;
@@ -156,7 +160,7 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
-            selData(output, input, index, cons, numThreads);
+            selData(output, input, cons, numThreads);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
@@ -199,7 +203,7 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
-            selData(output, smallDS, index, cons, optimalNumThreads);
+            selData(output, smallDS, cons, optimalNumThreads);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
@@ -225,6 +229,12 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
     string threadResultFile = "sortingThreadScalingResults.txt";
     string sizeResultFile = "sortingSizeScalingResults.txt";
 
+    Dataset powerOf2DS;
+
+    cout << "Coonverting to nearest power of 2" << endl;
+    nearestPowerOf2DS(powerOf2DS, input);
+    cout << "Conversion complete" << endl;
+
     int fieldIdx = 2;
 
     int optimalNumThreads = 2;
@@ -233,7 +243,11 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
     long long singleThreadTime = 0;
 
     int minNumThreads = 1;
-    int maxNumThreads = 16;
+#ifdef __MIC__
+    int maxNumThreads = 256;
+#else
+    int maxNumThreads = 32;
+#endif
 
     ofstream out(threadResultFile);
     out << "#NumThreads Time" << endl;
@@ -245,7 +259,7 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
-            sortData(output, input, fieldIdx, numThreads);
+            sortData(output, powerOf2DS, fieldIdx, numThreads);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
@@ -281,7 +295,7 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
 
     for(int i=0; i<numFractions; i++)
     {
-        extractSmallDS(smallDS, input, fractions[i]);
+        extractSmallDS(smallDS, powerOf2DS, fractions[i]);
 
         Timer timer;
         long long expTime = 0;

@@ -1,7 +1,6 @@
-
-CC       = icc
-CXXFLAGS = -std=c++11 -mmic -O3 -qopt-report=5 -qopt-report-phase=vec
-LDFLAGS  = -lpthread 
+CC       = g++
+CXXFLAGS = -std=c++11 -O3
+LDFLAGS  = -lpthread
 INCFLAGS = -I$(BOOST_HOME)/include
 SRC      = $(wildcard *.cpp)
 OBJS     = $(patsubst %.cpp,%.o,$(SRC))
