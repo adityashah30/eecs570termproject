@@ -1,5 +1,5 @@
 CHECK_ICC= $(shell which icc)
-CC       = g++
+
 CXXFLAGS = -std=c++11 -O3
 LDFLAGS  = -lpthread
 SRC      = $(wildcard *.cpp)
@@ -13,18 +13,16 @@ OTHRMICOBJS = ../sorting/sorting.mic ../selection/selection.mic \
 EXP      = scalingtests.out
 MICEXP   = scalingtests.out.mic
 
-all : compiler_check
-
-compiler_check :
 ifneq (,$(CHECK_ICC))
-	@echo "Found ICC. Using ICC"
-	$(eval CC = icc)
-	make $(EXP)
-	make $(MICEXP)
+
+CC = icc
+all : $(EXP) $(MICEXP)
+
 else
-	@echo "Did not find ICC. Using G++"
-	$(eval CC = g++)
-	make $(EXP)
+
+CC = g++
+all : $(EXP)
+
 endif
 
 $(EXP) : $(OBJS) $(OTHROBJS)
@@ -44,8 +42,12 @@ $(MICEXP) : $(MICEXP) $(OTHRMICOBJS)
 clean :
 	rm -vf $(EXP)
 	rm -vf $(OBJS)
+ifneq (,$(CHECK_ICC))
 	rm -vf $(MICOBJS)
+endif
 
 cleanall: clean
 	rm -vf $(OTHROBJS)
+ifneq (,$(CHECK_ICC))
 	rm -vf $(OTHRMICOBJS)
+endif
