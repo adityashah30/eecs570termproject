@@ -11,7 +11,7 @@ OTHRMICOBJS = ../sorting/sorting.mic ../selection/selection.mic \
 			  ../aggregation/group.mic ../preprocessing/loaddata.mic \
 			  ../timer/timer.mic
 EXP      = scalingtests.out
-MICEXP   = scalingtests.out.mic
+MICEXP   = scalingtests.mic.out
 
 ifneq (,$(CHECK_ICC))
 
@@ -28,7 +28,7 @@ endif
 $(EXP) : $(OBJS) $(OTHROBJS)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
-$(MICEXP) : $(MICEXP) $(OTHRMICOBJS)
+$(MICEXP) : $(MICOBJS) $(OTHRMICOBJS)
 	$(CC) -mmic $^ -o $@ $(LDFLAGS)
 
 %.o : %.cpp
