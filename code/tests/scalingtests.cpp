@@ -79,7 +79,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         {
             timer.startTimer();
         #ifdef __MIC__
-            group(expandedDS, input, numThreads);
+            group(output, expandedDS, numThreads);
         #else
             group(output, input, numThreads);
         #endif
@@ -188,7 +188,7 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         {
             timer.startTimer();
         #ifdef __MIC__
-            selData(expandedDS, input, cons, numThreads);
+            selData(output, expandedDS, cons, numThreads);
         #else
             selData(output, input, cons, numThreads);
         #endif
