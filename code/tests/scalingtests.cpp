@@ -39,8 +39,13 @@ int main()
 
 void testAggregation(Dataset& output, Dataset& input, int expCount)
 {
+#ifdef __MIC__
+    string threadResultFile = "aggregationThreadScalingResults.mic.txt";
+    string sizeResultFile = "aggregationSizeScalingResults.mic.txt";
+#else
     string threadResultFile = "aggregationThreadScalingResults.txt";
     string sizeResultFile = "aggregationSizeScalingResults.txt";
+#endif
 
     int group_idx = 1;
     int target_idx = 2;
@@ -133,8 +138,14 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
 
 void testSelection(Dataset& output, Dataset& input, int expCount)
 {
+
+#ifdef __MIC__
+    string threadResultFile = "selectionThreadScalingResults.mic.txt";
+    string sizeResultFile = "selectionSizeScalingResults.mic.txt";
+#else
     string threadResultFile = "selectionThreadScalingResults.txt";
     string sizeResultFile = "selectionSizeScalingResults.txt";
+#endif
 
     double cons = 3.5;
 
@@ -226,8 +237,14 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
 
 void testSorting(Dataset& output, Dataset& input, int expCount)
 {
+
+#ifdef __MIC__
+    string threadResultFile = "sortingThreadScalingResults.mic.txt";
+    string sizeResultFile = "sortingSizeScalingResults.mic.txt";
+#else
     string threadResultFile = "sortingThreadScalingResults.txt";
     string sizeResultFile = "sortingSizeScalingResults.txt";
+#endif
 
     Dataset powerOf2DS;
 
