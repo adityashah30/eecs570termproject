@@ -22,7 +22,7 @@ int main()
     loadData(input);
     cout << "Data loaded" << endl;
 
-    int expCount = 1;
+    int expCount = 10;
 
     cout << "Conducting tests on Aggregation..." << endl;
     testAggregation(output, input, expCount);
@@ -176,7 +176,7 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
 #endif
 
 #ifdef __INTEL_COMPILER
-    double fraction = 20;
+    double fraction = 100;
     Dataset expandedDS;
     duplicateDS(expandedDS, input, fraction);
 #endif
