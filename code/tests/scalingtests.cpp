@@ -62,6 +62,12 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
     int maxNumThreads = 32;
 #endif
 
+#ifdef __MIC__
+    double fraction = 10;
+    Dataset expandedDS;
+    duplicateDS(expandedDS, input, fraction);
+#endif
+
     ofstream out(threadResultFile);
     out << "#NumThreads Time" << endl;
 
@@ -72,7 +78,11 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
+        #ifdef __MIC__
+            group(expandedDS, input, numThreads);
+        #else
             group(output, input, numThreads);
+        #endif
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
@@ -161,6 +171,12 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
     int maxNumThreads = 32;
 #endif
 
+#ifdef __MIC__
+    double fraction = 20;
+    Dataset expandedDS;
+    duplicateDS(expandedDS, input, fraction);
+#endif
+
     ofstream out(threadResultFile);
     out << "#NumThreads Time" << endl;
 
@@ -171,7 +187,11 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
+        #ifdef __MIC__
+            selData(expandedDS, input, cons, numThreads);
+        #else
             selData(output, input, cons, numThreads);
+        #endif
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
