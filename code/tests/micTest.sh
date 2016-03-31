@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -S /bin/bash
-#PBS -N beamform
+#PBS -N DBXeonPhi
 #PBS -l nodes=Typhon2:ppn=1:gpus=1
 #PBS -l walltime=10:00:00
 #PBS -q test
