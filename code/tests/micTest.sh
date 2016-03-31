@@ -7,9 +7,9 @@
 
 if [[ $PBS_JOBID == "" ]] ; then
   # Not running under PBS
-  USE_LOCAL_MIC_NUMBER=4
+  USE_LOCAL_MIC_NUMBER=6
   echo "Running interactive job. Use 'qsub micTest.sh' to submit a batch job."
-  micnativeloadex scalingtests.mic.out
+  micnativeloadex scalingtests.mic.out -d $USE_LOCAL_MIC_NUMBER
 else
   # Running batch job under PBS
   HOST=`cat $PBS_NODEFILE`

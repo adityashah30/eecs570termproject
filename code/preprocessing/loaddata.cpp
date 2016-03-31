@@ -13,7 +13,7 @@ void loadData(Dataset& data)
     data.clear();
 
 #ifdef __MIC__
-    std::string filename = "ratings.csv";
+    std::string filename = "/home/micuser/ratings.csv";
 #else
     std::string filename = "../../data/ratings.csv";
 #endif
