@@ -62,7 +62,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
     int maxNumThreads = 32;
 #endif
 
-#ifdef __MIC__
+#ifdef __INTEL_COMPILER
     double fraction = 10;
     Dataset expandedDS;
     duplicateDS(expandedDS, input, fraction);
@@ -78,7 +78,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
-        #ifdef __MIC__
+        #ifdef __INTEL_COMPILER
             group(output, expandedDS, numThreads);
         #else
             group(output, input, numThreads);
@@ -118,7 +118,11 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
 
     for(int i=0; i<numFractions; i++)
     {
+    #ifdef __INTEL_COMPILER
+        extractSmallDS(smallDS, expandedDS, fractions[i]);
+    #else
         extractSmallDS(smallDS, input, fractions[i]);
+    #endif
 
         Timer timer;
         long long expTime = 0;
@@ -171,7 +175,7 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
     int maxNumThreads = 32;
 #endif
 
-#ifdef __MIC__
+#ifdef __INTEL_COMPILER
     double fraction = 20;
     Dataset expandedDS;
     duplicateDS(expandedDS, input, fraction);
@@ -187,7 +191,7 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
-        #ifdef __MIC__
+        #ifdef __INTEL_COMPILER
             selData(output, expandedDS, cons, numThreads);
         #else
             selData(output, input, cons, numThreads);
@@ -227,7 +231,11 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
 
     for(int i=0; i<numFractions; i++)
     {
+    #ifdef __INTEL_COMPILER
+        extractSmallDS(smallDS, expandedDS, fractions[i]);
+    #else
         extractSmallDS(smallDS, input, fractions[i]);
+    #endif
 
         Timer timer;
         long long expTime = 0;
