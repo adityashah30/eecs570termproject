@@ -12,7 +12,12 @@ void loadData(Dataset& data)
 {
     data.clear();
 
+#ifdef __MIC__
+    std::string filename = "/n/typhon/home/group7/570_project/termproject/data/ratings.csv";
+#else
     std::string filename = "../../data/ratings.csv";
+#endif
+
     std::ifstream in(filename);
     std::string line;
 
