@@ -5,10 +5,13 @@
 
 using namespace std;
 
+void populateData(Dataset&, Dataset&);
+
 int main()
 {
     	Dataset input;
     	Dataset output;
+	Dataset expectedOutput;
 
     	int 	numThreads = 4;
 
@@ -20,30 +23,38 @@ int main()
     	timer.stopTimer();
     	std::cout << "Time to load data: " << timer.getElapsedTime() << std::endl;
 
-
-	timer.startTimer();
-    	selData(output, input, cons, numThreads);
-    	timer.stopTimer();
-    	std::cout << "Time to select data on " << numThreads << " threads : " 
-           	  << timer.getElapsedTime() << std::endl;
+	for(int numThreads = 1; numThreads <= 16; numThreads <<= 1) 
+	{
+		timer.startTimer();
+    		selData(output, input, cons, numThreads);
+    		timer.stopTimer();
+    		std::cout << "Time to select data on " << numThreads << " threads : " 
+        	   	  << timer.getElapsedTime() << std::endl;
 	
-    	cout << " Output  Size: " << output.size() << endl; 
-	
-    	cout << " Input Size: " << input.size() << endl; 
-
-/*
-    for (int i=0; i < input.size(); i++) {
-	   	cout << input[i].userId << ' ' << input[i].movieId << ' ' << input[i].rating << ' ' << input[i].timestamp;
-	   	cout << endl;
-    } 
-    
-    cout << " Output Size: " << output.size() << endl; 
-
-    for (int i=0; i < output.size(); i++) {
-	   	cout << output[i].userId << ' ' << output[i].movieId << ' ' << output[i].rating << ' ' << output[i].timestamp;
-		cout <<  endl;
-    } 
-*/
+        	
+		std::cout << "output size" << output.size() << " expected output size" << expectedOutput.size() << endl;
+		assert(output == expectedOutput);
+        	std::cout << "NumThreads: " << numThreads << "; Test passed!" << std::endl;
+	}
   
-    return 0;
+    	return 0;
+}
+
+void populateData(Dataset& input, Dataset& expectedOutput)
+{
+    input.clear();
+    expectedOutput.clear();
+
+    double rating[2] = {2.5, 3.5};
+
+    int numRecords = 1024;
+    for(int i=0; i<numRecords; i++)
+    {
+    	int r = rand() % 2;
+        Record inputRecord = {i, 0, rating[r], 0};
+        input.push_back(inputRecord);
+        if(r == 1) {
+		expectedOutput.push_back(inputRecord);
+	}
+    }
 }

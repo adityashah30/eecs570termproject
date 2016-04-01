@@ -74,7 +74,7 @@ void selData(Dataset& out, Dataset& in, double constraint, int numThreads)
 
 		rc = pthread_create( &threads[i], NULL, 
                              	     selDataThread, (void*)&sArgs[i]);
-
+		
 		if(rc)
         	{
             	std::cerr << "Error: Return code from pthread_create on threadId: " 
@@ -95,7 +95,8 @@ void selData(Dataset& out, Dataset& in, double constraint, int numThreads)
     	}
 
 	// Merge Phase
-	int numChunks = numThreads >> 1;
+
+/*	int numChunks = numThreads >> 1;
 	for(int stride = 1; stride < numThreads; stride <<= 1, numChunks >>= 1)
 	{	
 		for(int i=0; i < numChunks; i++)
@@ -131,12 +132,13 @@ void selData(Dataset& out, Dataset& in, double constraint, int numThreads)
 
 	out = sArgs[0].tmp_result;
 	
-/*
+*/
+
     	for(int i = 0; i < numThreads; i++)
     	{
 	    out.insert(out.end(), (sArgs[i].tmp_result).begin(), (sArgs[i].tmp_result).end()); 
     	}
-*/
+
 	delete[] beginIndex;
 	delete[] endIndex;
     	delete[] threads;

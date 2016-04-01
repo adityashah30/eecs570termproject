@@ -2,35 +2,79 @@
 #include "../timer/timer.h"
 #include <string>
 #include <cassert>
+#include <algorithm>
 
 using namespace std;
 
+void populateData(Dataset& input, Dataset& expectedOutput);
+
+static bool compare(const Record& first, const Record& second){
+	return first.movieId < second.movieId;
+}
+
 int main()
 {
-    string filename;
     Dataset input;
     Dataset output;
-
-    filename = "../../data/ratings.csv";
-    int numThreads = 3;
-    
-    Timer timer;
-    timer.startTimer();
-    loadData(input);
-    timer.stopTimer();
-    std::cout << "Time to load data: " << timer.getElapsedTime() << std::endl;
-
-    timer.startTimer();
-	group(output, input, numThreads);
-    timer.stopTimer();
+	Dataset expectedOutput;
+	Timer timer;
 	
-	cout << "Group by\t" << "Value" << endl; 
-	for(auto it = output.begin(); it != output.end(); ++it){
-		cout << it->movieId << ("\t\t") << it->rating << endl;
+    int numThreads = 1;
+    
+	for(; numThreads < 9; ++numThreads){
+		populateData(input, expectedOutput);
+		
+		timer.startTimer();
+		group(output, input, numThreads);
+		timer.stopTimer();
+		
+		sort(output.begin(), output.end(), compare);
+		
+		/*cout << "My output" << endl;
+		
+		for(auto it : output)
+			cout << it.movieId << ' ' << it.rating << endl;
+		
+		cout << "Expected output" << endl;
+		
+		for(auto it : expectedOutput)
+			cout << it.movieId << ' ' << it.rating << endl;*/
+		
+		assert(output.size() == expectedOutput.size());
+		
+		for(int i = 0; i < output.size(); ++i){
+			assert(output[i].movieId == expectedOutput[i].movieId);
+			assert(output[i].rating == expectedOutput[i].rating);
+		}
+		
+		//assert(output == expectedOutput);
+		
+		cout << "Time to group data on " << numThreads << " threads : " 
+              << timer.getElapsedTime() << std::endl;
+    }
+	
+    return 0;
+}
+
+void populateData(Dataset& input, Dataset& expectedOutput){
+	input.clear();
+	expectedOutput.clear();
+	
+	int numRecords = 1024;
+	int offset = 123;
+	int numid = 128;
+	
+	for(int i = 0; i < numRecords/numid; ++i){
+		double total = 0;
+		for(int j = 0; j < numid; ++j){
+			double rating = rand()%5;
+			Record inputRecord = {0, i, rating, 0 };
+			total += rating;
+			input.push_back(inputRecord);
+		}
+		double avg = total/numid;
+		Record outputRecord = {0, i, avg, 0};
+		expectedOutput.push_back(outputRecord);
 	}
 	
-    std::cout << "Time to group data on " << numThreads << " threads : " 
-              << timer.getElapsedTime() << std::endl;
-    
-    return 0;
 }
