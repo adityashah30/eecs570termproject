@@ -40,8 +40,8 @@ int main()
 void testAggregation(Dataset& output, Dataset& input, int expCount)
 {
 #ifdef __MIC__
-    string threadResultFile = "aggregationThreadScalingResults.mic.txt";
-    string sizeResultFile = "aggregationSizeScalingResults.mic.txt";
+    string threadResultFile = "/home/micuser/aggregationThreadScalingResults.mic.txt";
+    string sizeResultFile = "/home/micuser/aggregationSizeScalingResults.mic.txt";
 #else
     string threadResultFile = "aggregationThreadScalingResults.txt";
     string sizeResultFile = "aggregationSizeScalingResults.txt";
@@ -154,8 +154,8 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
 {
 
 #ifdef __MIC__
-    string threadResultFile = "selectionThreadScalingResults.mic.txt";
-    string sizeResultFile = "selectionSizeScalingResults.mic.txt";
+    string threadResultFile = "/home/micuser/selectionThreadScalingResults.mic.txt";
+    string sizeResultFile = "/home/micuser/selectionSizeScalingResults.mic.txt";
 #else
     string threadResultFile = "selectionThreadScalingResults.txt";
     string sizeResultFile = "selectionSizeScalingResults.txt";
@@ -267,8 +267,8 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
 {
 
 #ifdef __MIC__
-    string threadResultFile = "sortingThreadScalingResults.mic.txt";
-    string sizeResultFile = "sortingSizeScalingResults.mic.txt";
+    string threadResultFile = "/home/micuser/sortingThreadScalingResults.mic.txt";
+    string sizeResultFile = "/home/micuser/sortingSizeScalingResults.mic.txt";
 #else
     string threadResultFile = "sortingThreadScalingResults.txt";
     string sizeResultFile = "sortingSizeScalingResults.txt";
