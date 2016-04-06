@@ -63,7 +63,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
 #endif
 
 #ifdef __INTEL_COMPILER
-    double fraction = 10;
+    double fraction = 5;
     Dataset expandedDS;
     duplicateDS(expandedDS, input, fraction);
 #endif
@@ -103,7 +103,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
 
         cout << "Time to aggregate data on " << numThreads << " threads : " 
              << expTime << "; Ideal Time: " << idealTime << endl;
-        out << numThreads << " " << expTime << " " << idealTime << endl;
+        out << numThreads << " " << expTime << " " << idealTime << endl; 
     }
 
     out.close();
@@ -176,7 +176,7 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
 #endif
 
 #ifdef __INTEL_COMPILER
-    double fraction = 100;
+    double fraction = 5;
     Dataset expandedDS;
     duplicateDS(expandedDS, input, fraction);
 #endif
@@ -276,7 +276,7 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
 
     Dataset powerOf2DS;
 
-    cout << "Coonverting to nearest power of 2" << endl;
+    cout << "Coonverting to nearest power of 2" << endl; 
     nearestPowerOf2DS(powerOf2DS, input);
     cout << "Conversion complete" << endl;
 
@@ -297,14 +297,20 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
     ofstream out(threadResultFile);
     out << "#NumThreads Time" << endl;
 
+    ///////////////////Reduce Dataset Size for Sorting//////
+    Dataset reducedDS;
+    extractSmallDS(reducedDS, powerOf2DS, 0.5);
+    ////////////////////////////////////////////////////////
+
     for(int numThreads = minNumThreads; numThreads <= maxNumThreads; numThreads <<= 1)
     {
         Timer timer;
         long long expTime = 0;
         for(int c = 0; c < expCount; c++)
         {
-            timer.startTimer();
-            sortData(output, powerOf2DS, fieldIdx, numThreads);
+            timer.startTimer();	
+            // sortData(output, powerOf2DS, fieldIdx, numThreads);
+            sortData(output, reducedDS, fieldIdx, numThreads);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
@@ -339,8 +345,9 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
     out << "#Fraction Time (Optimal numThreads: " << optimalNumThreads << ")" << endl;
 
     for(int i=0; i<numFractions; i++)
-    {
-        extractSmallDS(smallDS, powerOf2DS, fractions[i]);
+    { 
+        extractSmallDS(smallDS, reducedDS, fractions[i]);
+	//tractSmallDS(smallDS, powerOf2DS, fractions[i]);
 
         Timer timer;
         long long expTime = 0;
