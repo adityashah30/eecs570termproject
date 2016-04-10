@@ -3,6 +3,7 @@ CHECK_ICC= $(shell which icc)
 CXXFLAGS = -std=c++11 -O3
 LDFLAGS  = -lpthread
 SRC      = $(wildcard *.cpp)
+SRC      := $(filter-out scalingtests_memtest.cpp, $(SRC))
 OBJS     = $(SRC:.cpp=.o)
 MICOBJS  = $(SRC:.cpp=.mic)
 OTHROBJS = ../sorting/sorting.o ../selection/selection.o ../aggregation/group.o \

@@ -24,15 +24,15 @@ int main()
 
     int expCount = 10;
 
-    cout << "Conducting tests on Aggregation..." << endl;
-    testAggregation(output, input, expCount);
-    cout << "Tests on Aggregation complete..." << endl;
+    //cout << "Conducting tests on Aggregation..." << endl;
+    //testAggregation(output, input, expCount);
+    //cout << "Tests on Aggregation complete..." << endl;
     cout << "Conducting tests on Selection..." << endl;
     testSelection(output, input, expCount);
     cout << "Tests on Selection complete..." << endl;
-    cout << "Conducting tests on Sorting..." << endl;
-    testSorting(output, input, expCount);
-    cout << "Tests on Sorting complete..." << endl;
+    //cout << "Conducting tests on Sorting..." << endl;
+    //testSorting(output, input, expCount);
+    //cout << "Tests on Sorting complete..." << endl;
 
     return 0;
 }
@@ -103,7 +103,12 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
 
         cout << "Time to aggregate data on " << numThreads << " threads : " 
              << expTime << "; Ideal Time: " << idealTime << endl;
-        out << numThreads << " " << expTime << " " << idealTime << endl; 
+        out << numThreads << " " << expTime << " " << idealTime << endl;
+    
+        // Memory Bandwidth Measurement
+	cout << "Memory Bandwidth of Aggregation on " << numThreads << " threads : "
+	     << (sizeof(expandedDS) + expandedDS.size()*sizeof(expandedDS[0]))/(expTime*1000) << " MB/sec " << endl;
+        //
     }
 
     out.close();
@@ -217,6 +222,12 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         cout << "Time to select data on " << numThreads << " threads : " 
              << expTime << "; Ideal Time: " << idealTime << endl;
         out << numThreads << " " << expTime << " " << idealTime << endl;
+	
+        // Memory Bandwidth Measurement
+	cout << "Memory Bandwidth of Selection on " << numThreads << " threads : "
+	     << (sizeof(expandedDS) + expandedDS.size()*sizeof(expandedDS[0]))/(expTime*1000) << " MB/sec " << endl;
+        //
+
     }
 
     out.close();
@@ -296,7 +307,7 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
 
     ofstream out(threadResultFile);
     out << "#NumThreads Time" << endl;
-
+    
     ///////////////////Reduce Dataset Size for Sorting//////
     Dataset reducedDS;
     extractSmallDS(reducedDS, powerOf2DS, 0.5);
@@ -308,9 +319,9 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
         long long expTime = 0;
         for(int c = 0; c < expCount; c++)
         {
-            timer.startTimer();	
-            // sortData(output, powerOf2DS, fieldIdx, numThreads);
+            timer.startTimer(); 
             sortData(output, reducedDS, fieldIdx, numThreads);
+	    //sortData(output, powerOf2DS, fieldIdx, numThreads);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
@@ -332,6 +343,12 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
         cout << "Time to sort data on " << numThreads << " threads : " 
              << expTime << "; Ideal Time: " << idealTime << endl;
         out << numThreads << " " << expTime << " " << idealTime << endl;
+	
+        // Memory Bandwidth Measurement
+	cout << "Memory Bandwidth of Sorting on " << numThreads << " threads : "
+	     << (sizeof(expandedDS) + expandedDS.size()*sizeof(expandedDS[0]))/(expTime*1000) << " MB/sec " << endl;
+        //
+
     }
 
     out.close();
@@ -345,9 +362,10 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
     out << "#Fraction Time (Optimal numThreads: " << optimalNumThreads << ")" << endl;
 
     for(int i=0; i<numFractions; i++)
-    { 
+    {
+        
         extractSmallDS(smallDS, reducedDS, fractions[i]);
-	//tractSmallDS(smallDS, powerOf2DS, fractions[i]);
+	//extractSmallDS(smallDS, powerOf2DS, fractions[i]);
 
         Timer timer;
         long long expTime = 0;
