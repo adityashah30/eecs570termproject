@@ -1,5 +1,6 @@
 data
 *.o
+*.cuo
 *.mic
 *.out
 *.png
