@@ -3,7 +3,7 @@ NVCC     = nvcc
 CXXFLAGS = -std=c++11 -g
 NVCCFLAGS= -std=c++11 -g
 LDFLAGS  = -lpthread
-NVLDFLAGS= -L/usr/local/cuda/lib64 -lcuda -lcudart
+NVLDFLAGS= -L${CUDA_HOME}/lib64 -lcuda -lcudart
 SRC      = $(wildcard *.cpp)
 CUSRC    = $(wildcard *.cu)
 OBJS     = $(SRC:.cpp=.o)
