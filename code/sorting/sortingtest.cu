@@ -14,19 +14,20 @@ int main()
     Dataset expectedOutput;
 
     int index = 0;
-    int numThreads = 128;
+    for(int numThreads = 1; numThreads <= 1024; numThreads<<=1)
+    {
+        populateData(input, expectedOutput);
 
-    populateData(input, expectedOutput);
-
-    Timer timer;
-    timer.startTimer();
-    sortData(output, input, index, numThreads);
-    timer.stopTimer();
-    std::cout << "Time to sort data on " << numThreads << " threads : " 
-              << timer.getElapsedTime() << std::endl;
-    std::cout << output[0] << "; " << expectedOutput[0] << endl;
-    assert(output == expectedOutput);
-    std::cout << "NumThreads: " << numThreads << "; Test passed!" << std::endl;
+        Timer timer;
+        timer.startTimer();
+        sortData(output, input, index, numThreads);
+        timer.stopTimer();
+        std::cout << "Time to sort data on " << numThreads << " threads : " 
+                  << timer.getElapsedTime() << std::endl;
+        
+        assert(output == expectedOutput);
+        std::cout << "NumThreads: " << numThreads << "; Test passed!" << std::endl;
+    }
 
     return 0;
 }

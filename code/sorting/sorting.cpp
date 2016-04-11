@@ -109,7 +109,7 @@ static void* sortDataThread(void* args)
 
     SortComparator compObj(fieldIdx);
 
-    int numComp = (size+2*numThreads-1)/(2*numThreads);
+    int numComp = ((size>>1) + numThreads-1)/numThreads;
     
     for(int ostep = 2; ostep <= size; ostep <<= 1)
     {

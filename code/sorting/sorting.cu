@@ -34,7 +34,7 @@ void sortDataKernel(Record* out,
     int numThreads = blockDim.x*blockDim.y*blockDim.z
                         *gridDim.x*gridDim.y*gridDim.z;
 
-    int numComp = (size>>1 + numThreads-1)/numThreads;
+    int numComp = ((size>>1) + numThreads-1)/numThreads;
     
     for(int ostep = 2; ostep <= size; ostep <<= 1)
     {
@@ -45,21 +45,14 @@ void sortDataKernel(Record* out,
             for(int i=0; i<numComp; i++)
             {
                 int compId = threadId*numComp + i;
-
-                printf("%d %d\n", compId, size);
-
                 if(compId >= size>>1)
                 {
                     break;
                 }
-
                 int idx1 = (compId/stride)*istep + (compId%stride);
                 int idx2 = idx1 + stride;
                 Record* it1 = out + idx1;
                 Record* it2 = out + idx2;
-
-                printf("%d %d %d\n", compId, idx1, idx2);
-
                 bool dir = (compId%ostep) < halfStep;
                 if(dir)
                 {
