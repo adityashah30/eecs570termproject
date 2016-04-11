@@ -27,6 +27,9 @@ struct Record
     {
     }
 
+#ifdef __NVCC__
+    __host__ __device__
+#endif
     Record(const Record& other)
     : userId(other.userId), movieId(other.movieId), 
       rating(other.rating), timestamp(other.timestamp)
@@ -36,6 +39,8 @@ struct Record
 };
 
 bool operator==(const Record& a, const Record& b);
+
+std::ostream& operator<<(std::ostream& os, const Record& rec);
 
 typedef std::vector<Record> Dataset;
 

@@ -1,4 +1,4 @@
-#include "sorting.h"
+#include "sorting.cuh"
 #include "../timer/timer.h"
 #include <string>
 #include <cassert>
@@ -14,21 +14,19 @@ int main()
     Dataset expectedOutput;
 
     int index = 0;
-    
-    for(int numThreads = 1; numThreads < 9; numThreads++)
-    {
-        populateData(input, expectedOutput);
+    int numThreads = 128;
 
-        Timer timer;
-        timer.startTimer();
-        sortData(output, input, index, numThreads);
-        timer.stopTimer();
-        std::cout << "Time to sort data on " << numThreads << " threads : " 
-                  << timer.getElapsedTime() << std::endl;
-        
-        assert(output == expectedOutput);
-        std::cout << "NumThreads: " << numThreads << "; Test passed!" << std::endl;
-    }
+    populateData(input, expectedOutput);
+
+    Timer timer;
+    timer.startTimer();
+    sortData(output, input, index, numThreads);
+    timer.stopTimer();
+    std::cout << "Time to sort data on " << numThreads << " threads : " 
+              << timer.getElapsedTime() << std::endl;
+    std::cout << output[0] << "; " << expectedOutput[0] << endl;
+    assert(output == expectedOutput);
+    std::cout << "NumThreads: " << numThreads << "; Test passed!" << std::endl;
 
     return 0;
 }

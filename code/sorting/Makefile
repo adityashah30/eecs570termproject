@@ -1,7 +1,7 @@
 CC       = g++
 NVCC     = nvcc
-CXXFLAGS = -std=c++11 -O3
-NVCCFLAGS= -std=c++11 -O3
+CXXFLAGS = -std=c++11 -g
+NVCCFLAGS= -std=c++11 -g
 LDFLAGS  = -lpthread
 NVLDFLAGS= -L/usr/local/cuda/lib64 -lcuda -lcudart
 SRC      = $(wildcard *.cpp)
@@ -15,7 +15,7 @@ CUDATEST = sortingtest.cu.out
 
 all : $(TEST) $(EXP) $(CUDATEST) 
 
-$(CUDATEST) : sortingtest.o sorting.cuo ../preprocessing/loaddata.o ../timer/timer.o
+$(CUDATEST) : sortingtest.cuo sorting.cuo ../preprocessing/loaddata.o ../timer/timer.o
 	$(CC) $^ -o $@ $(NVLDFLAGS)
 
 $(TEST) : sortingtest.o sorting.o ../preprocessing/loaddata.o ../timer/timer.o

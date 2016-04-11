@@ -8,6 +8,12 @@ bool operator==(const Record& a, const Record& b)
            (a.timestamp == b.timestamp);
 }
 
+std::ostream& operator<<(std::ostream& os, const Record& rec)
+{
+    os << rec.userId << ", " << rec.movieId << ", " << rec.rating << ", " << rec.timestamp;
+    return os;
+}
+
 void loadData(Dataset& data)
 {
     data.clear();
