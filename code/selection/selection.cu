@@ -1,95 +1,89 @@
 #include "selection.cuh"
 
 __global__
-void selDataKernel( Record* in,
-                    int beginIndex[],
-		    int endIndex[],
-		    int *cnt_d,
-                    double constraint)
+void selDataKernel(Record* out,
+		           int* cnt_d,
+                   double ratingVal,
+                   size_t size)
 {
 	size_t blockId = blockIdx.x
  	               + blockIdx.y*gridDim.x
-       	               + blockIdx.z*gridDim.y*gridDim.x;
+       	           + blockIdx.z*gridDim.y*gridDim.x;
 
-    	size_t threadId = threadIdx.x
-                        + threadIdx.y*blockDim.x
-                        + threadIdx.z*blockDim.x*blockDim.y
-                        + blockId*blockDim.x*blockDim.y*blockDim.z;
-/*
-    	size_t numThreads = blockDim.x*blockDim.y*blockDim.z*
-                            gridDim.x*gridDim.y*gridDim.z;
-*/
-	int idx1 = beginIndex[threadId];
-	int idx2 = endIndex[threadId]; 
+    size_t threadId = threadIdx.x
+                    + threadIdx.y*blockDim.x
+                    + threadIdx.z*blockDim.x*blockDim.y
+                    + blockId*blockDim.x*blockDim.y*blockDim.z;
 
-	Record* bIt = in + idx1;
-       	Record* eIt = in + idx2;	
+    size_t numThreads = blockDim.x*blockDim.y*blockDim.z
+                        *gridDim.x*gridDim.y*gridDim.z;
+
+    if(threadId >= numThreads)
+        return;
+
+    int chunkSize = (size + numThreads-1)/numThreads;
+	int idx1 = threadId*chunkSize;
+	int idx2 = (threadId+1)*chunkSize;
+
+    int cnt = 0;
+
+    if(threadId == numThreads-1)
+    {
+        idx2 = size;
+    }
+
+	Record* bIt = out + idx1;
+    Record* eIt = out + idx2;	
 	Record* selIt = bIt;
 
-  	for (Record* it = bIt; it != eIt; it++) {
-		if (it->rating == constraint) {
+  	for (Record* it = bIt; it != eIt; it++) 
+    {
+		if (it->rating == ratingVal)
+        {
 			*selIt = *it;
-			selIt++;
-			cnt_d[threadId] = cnt_d[threadId] + 1;
+			selIt++; 
+            cnt++;
 		}
 	}
-    
+    cnt_d[threadId] = cnt;
 }
 
-void selData(Dataset& out, Dataset& in, double constraint, int numThreads)
+void selData(Dataset& out, Dataset& in, double ratingVal, int numThreads)
 {
-	out.clear();
-    	Dataset_d in_d = in;
-	Dataset out_tmp;
+    Dataset_d out_d = in;
+    size_t size = in.size();
 
-    	size_t size = in.size();	
-	size_t o_size = 0;
+    Dataset out_temp(size);
 
-	int  *cnt, *cnt_d;
-	int k = 0;
+    vecint_d cnt_d(numThreads);
+    std::vector<int> cnt(numThreads);
+    int chunkSize = (size + numThreads-1)/numThreads;
 
-	cnt = (int*)malloc(numThreads*sizeof(int));
-	cudaMalloc(&cnt_d, numThreads*sizeof(int));
-	cudaMemset(cnt_d, 0, numThreads*sizeof(int));
+    int tpb = (numThreads<1024)?numThreads:1024;
+    dim3 block(tpb,1,1);
+	int numBlocks = (numThreads+tpb-1)/tpb;
+    dim3 grid(numBlocks,1,1);
+ 
+    std::cout << size << " " << numThreads << " " << tpb << " " << numBlocks << " " << chunkSize << std::endl;
 
-    	int beginIndex[numThreads];
-    	int endIndex[numThreads];
-/*
-    	dim3 block(1024,1,1);
-	int numBlocks = (numThreads+1023)/1024;
-    	dim3 grid(numBlocks,1,1);
-*/
+    Record* out_begin = thrust::raw_pointer_cast(out_d.data());
+    int* cnt_begin = thrust::raw_pointer_cast(cnt_d.data());
 
-	dim3 block(numThreads,1,1);
-	dim3 grid(1,1,1);
+  	selDataKernel<<<grid,block>>>(out_begin, cnt_begin, ratingVal, size);
+    checkCudaErrorKernel("selDataKernel");
 
-    	int chunkSize = size/numThreads;
-	
-    	for(int i=0; i < numThreads - 1; i++) {
-	    beginIndex[i] = chunkSize * i;
-	    endIndex[i] = chunkSize * (i+1);
-	}
-	beginIndex[numThreads-1] = chunkSize*(numThreads-1);
-	endIndex[numThreads-1] = size;
+    thrust::copy(out_d.begin(), out_d.end(), out_temp.begin());
+    thrust::copy(cnt_d.begin(), cnt_d.end(), cnt.begin());
 
-    	Record* in_begin = thrust::raw_pointer_cast(in_d.data());
+    size_t osize = std::accumulate(cnt.begin(), cnt.end(), 0);
+    out.resize(osize);
 
-  	selDataKernel<<<grid,block>>>(in_begin, beginIndex, endIndex, cnt_d, constraint);
-       	checkCudaErrorKernel("selDataKernel");
+    Dataset::iterator out_it = out.begin();
 
-	out_tmp.resize(in.size());
-    	thrust::copy(in_d.begin(), in_d.end(), out_tmp.begin());
-	cudaMemcpy(cnt, cnt_d, numThreads*sizeof(int), cudaMemcpyDeviceToHost);
-
-	for(int i=0; i < numThreads; i++) {
-		o_size = o_size + cnt[i];
-	}
-
-	out.resize(o_size);
-
-	for(int i = 0; i < numThreads; i++) {
-		for(int j = 0; j < cnt[i]; j++) { 
-			out[k++] = out_tmp[chunkSize*i+j];
-		}
-	}
+    for(int i=0; i<numThreads; i++)
+    {
+        Dataset::iterator out_temp_it = out_temp.begin() + i*chunkSize;
+        std::copy(out_temp_it, out_temp_it+cnt[i], out_it);
+        out_it += cnt[i];
+    }
 }

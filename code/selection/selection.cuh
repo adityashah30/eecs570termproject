@@ -20,6 +20,7 @@
 #include <cstdlib>
 
 typedef thrust::device_vector<Record> Dataset_d;
+typedef thrust::device_vector<int> vecint_d;
 
 /**
  * The main sorting function.
