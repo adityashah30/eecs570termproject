@@ -1,20 +1,44 @@
 CC       = g++
+NVCC     = nvcc
 CXXFLAGS = -std=c++11 -O3
+NVCCFLAGS= -std=c++11 -O3
 LDFLAGS  = -lpthread
-INCFLAGS = -I$(BOOST_HOME)/include
+NVLDFLAGS= -L${CUDA_HOME}/lib64 -lcudart
 SRC      = $(wildcard *.cpp)
-OBJS     = $(patsubst %.cpp,%.o,$(SRC))
-EXEC     = selectiontest.out
+CUSRC    = $(wildcard *.cu)
+OBJS     = $(SRC:.cpp=.o)
+CUOBJS   = $(CUSRC:.cu=.cuo)
+TEST     = selectiontest.out
+EXP      = selectionexp.out
+CUDATEST = selectiontest.cu.out
+CUDAEXP  = selectionexp.cu.out
 
-$(EXEC) : $(OBJS) ../preprocessing/loaddata.o ../timer/timer.o
+all : $(TEST) $(EXP) $(CUDATEST) $(CUDAEXP)
+
+$(CUDATEST) : selectiontest.cuo selection.cuo ../preprocessing/loaddata.o ../timer/timer.o
+	$(CC) $^ -o $@ $(NVLDFLAGS)
+
+$(CUDAEXP) : selectionexp.cuo selection.cuo ../preprocessing/loaddata.o ../timer/timer.o
+	$(CC) $^ -o $@ $(NVLDFLAGS)
+
+$(TEST) : selectiontest.o selection.o ../preprocessing/loaddata.o ../timer/timer.o
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+$(EXP) : selectionexp.o selection.o ../preprocessing/loaddata.o ../timer/timer.o
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 %.o : %.cpp
-	$(CC) $(INCFLAGS) $(CXXFLAGS) -c $^ -o $@
+	$(CC) $(CXXFLAGS) -c $^ -o $@
+
+%.cuo : %.cu
+	$(NVCC) $(NVCCFLAGS) -c $^ -o $@
 
 .PHONY : clean
 
 clean :
-	rm -vf $(EXEC)
+	rm -vf $(TEST)
+	rm -vf $(EXP)
+	rm -vf $(CUDATEST)
+	rm -vf $(CUDAEXP)
 	rm -vf $(OBJS)
-	rm -vf ../preprocessing/loaddata.o ../timer/timer.o
+	rm -vf $(CUOBJS)
