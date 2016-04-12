@@ -12,30 +12,27 @@ int main()
     	Dataset input;
     	Dataset output;
 	Dataset expectedOutput;
-
     	double 	cons = 3.5;
 
-    	Timer timer;
-    	timer.startTimer();
-    	loadData(input);
-    	timer.stopTimer();
-    	std::cout << "Time to load data: " << timer.getElapsedTime() << std::endl;
-
-	for(int numThreads = 1; numThreads <= 16; numThreads <<= 1) 
+	for(int numThreads = 1; numThreads <= 1024; numThreads <<=1)
 	{
+
+		populateData(input, expectedOutput);
+
+    		Timer timer;
 		timer.startTimer();
     		selData(output, input, cons, numThreads);
     		timer.stopTimer();
     		std::cout << "Time to select data on " << numThreads << " threads : " 
-        	   	  << timer.getElapsedTime() << std::endl;
+        		 << timer.getElapsedTime() << std::endl;
 	
         	
 		std::cout << "output size" << output.size() << " expected output size" << expectedOutput.size() << endl;
 		assert(output == expectedOutput);
         	std::cout << "NumThreads: " << numThreads << "; Test passed!" << std::endl;
-	}
-  
-    	return 0;
+  	}
+    	
+	return 0;
 }
 
 void populateData(Dataset& input, Dataset& expectedOutput)

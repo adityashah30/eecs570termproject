@@ -43,7 +43,7 @@ void selData(Dataset& out, Dataset& in, double constraint, int numThreads)
 	Dataset out_tmp;
 
     	size_t size = in.size();	
-	size_t o_size;
+	size_t o_size = 0;
 
 	int  *cnt, *cnt_d;
 	int k = 0;
@@ -54,10 +54,14 @@ void selData(Dataset& out, Dataset& in, double constraint, int numThreads)
 
     	int beginIndex[numThreads];
     	int endIndex[numThreads];
-
+/*
     	dim3 block(1024,1,1);
 	int numBlocks = (numThreads+1023)/1024;
     	dim3 grid(numBlocks,1,1);
+*/
+
+	dim3 block(numThreads,1,1);
+	dim3 grid(1,1,1);
 
     	int chunkSize = size/numThreads;
 	
