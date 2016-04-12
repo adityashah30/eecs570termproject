@@ -28,7 +28,7 @@ int main()
     ofstream out(resultFile);
     out << "#NumThreads Time" << endl;
 
-    for(int numThreads = 1; numThreads <= 1024; numThreads <<= 1)
+    for(int numThreads = 32; numThreads <= 1024; numThreads <<= 1)
     {
         Timer timer;
         long long expTime = 0;
