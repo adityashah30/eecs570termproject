@@ -14,7 +14,7 @@ int main()
     Dataset expectedOutput;
 
     int index = 0;
-    for(int numThreads = 1; numThreads <= 1024; numThreads<<=1)
+    for(int numThreads = 32; numThreads <= 1024; numThreads<<=1)
     {
         populateData(input, expectedOutput);
 
@@ -37,7 +37,7 @@ void populateData(Dataset& input, Dataset& expectedOutput)
     input.clear();
     expectedOutput.clear();
     
-    int numRecords = 1024;
+    int numRecords = 4096;
     int offset = 123;
     for(int i=0; i<numRecords; i++)
     {

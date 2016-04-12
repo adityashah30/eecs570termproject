@@ -93,4 +93,3 @@ void sortData(Dataset& out, Dataset& in, int index, int numThreads)
     out.resize(size);
     thrust::copy(out_d.begin(), out_d.end(), out.begin());
 }
-

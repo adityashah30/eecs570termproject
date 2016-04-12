@@ -12,7 +12,7 @@ int main()
     Dataset input;
     Dataset output;
 
-    string resultFile = "sortingScalingResults.txt";
+    string resultFile = "sortingScalingGPUResults.txt";
 
     int fieldIdx = 2;
     int expCount = 1;
