@@ -2,13 +2,13 @@
 
 __global__
 void selDataKernel(Record* out,
-		           int* cnt_d,
+                   int* cnt_d,
                    double ratingVal,
                    size_t size)
 {
-	size_t blockId = blockIdx.x
- 	               + blockIdx.y*gridDim.x
-       	           + blockIdx.z*gridDim.y*gridDim.x;
+    size_t blockId = blockIdx.x
+                   + blockIdx.y*gridDim.x
+                   + blockIdx.z*gridDim.y*gridDim.x;
 
     size_t threadId = threadIdx.x
                     + threadIdx.y*blockDim.x
@@ -18,34 +18,32 @@ void selDataKernel(Record* out,
     size_t numThreads = blockDim.x*blockDim.y*blockDim.z
                         *gridDim.x*gridDim.y*gridDim.z;
 
-    if(threadId >= numThreads)
-        return;
-
-    int chunkSize = (size + numThreads-1)/numThreads;
-	int idx1 = threadId*chunkSize;
-	int idx2 = (threadId+1)*chunkSize;
-
-    int cnt = 0;
-
-    if(threadId == numThreads-1)
+    if(threadId < numThreads)
     {
-        idx2 = size;
-    }
+        int chunkSize = (size + numThreads-1)/numThreads;
+        int idx1 = threadId*chunkSize;
+        int idx2 = (threadId+1)*chunkSize;
 
-	Record* bIt = out + idx1;
-    Record* eIt = out + idx2;	
-	Record* selIt = bIt;
+        int cnt = 0;
 
-  	for (Record* it = bIt; it != eIt; it++) 
-    {
-		if (it->rating == ratingVal)
+        if(threadId == numThreads-1)
         {
-			*selIt = *it;
-			selIt++; 
-            cnt++;
-		}
-	}
-    cnt_d[threadId] = cnt;
+            idx2 = size;
+        }
+
+        Record* selIt = out + idx1;
+
+        for (int i=idx1; i<idx2; i++)
+        {
+            if (out[i].rating == ratingVal)
+            {
+                *selIt = out[i];
+                selIt++; 
+                cnt++;
+            }
+        }
+        cnt_d[threadId] = cnt;
+    }
 }
 
 void selData(Dataset& out, Dataset& in, double ratingVal, int numThreads)
@@ -61,7 +59,7 @@ void selData(Dataset& out, Dataset& in, double ratingVal, int numThreads)
 
     int tpb = (numThreads<1024)?numThreads:1024;
     dim3 block(tpb,1,1);
-	int numBlocks = (numThreads+tpb-1)/tpb;
+    int numBlocks = (numThreads+tpb-1)/tpb;
     dim3 grid(numBlocks,1,1);
  
     std::cout << size << " " << numThreads << " " << tpb << " " << numBlocks << " " << chunkSize << std::endl;
@@ -69,7 +67,7 @@ void selData(Dataset& out, Dataset& in, double ratingVal, int numThreads)
     Record* out_begin = thrust::raw_pointer_cast(out_d.data());
     int* cnt_begin = thrust::raw_pointer_cast(cnt_d.data());
 
-  	selDataKernel<<<grid,block>>>(out_begin, cnt_begin, ratingVal, size);
+    selDataKernel<<<grid,block>>>(out_begin, cnt_begin, ratingVal, size);
     checkCudaErrorKernel("selDataKernel");
 
     thrust::copy(out_d.begin(), out_d.end(), out_temp.begin());
