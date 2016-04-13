@@ -17,4 +17,4 @@ USERDIR=/home/aditysha/570termproject/code/sorting
 OUTFILE=$USERDIR/output/$PBS_JOBID.stdout
 echo "I'm running on: $HOST" > $OUTFILE
 # Launching job to GPU
-$USERDIR/soringtest.cu.out >> $OUTFILE
+$USERDIR/sortingtest.cu.out >> $OUTFILE
