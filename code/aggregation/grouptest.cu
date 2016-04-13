@@ -19,13 +19,14 @@ int main()
 	Dataset expectedOutput;
 	Timer timer;
 	
-    int numThreads = 64;
+    int numThreads = 32;
     
 	cout << "start populate data" << endl;
 	populateData(input, expectedOutput);
 	cout << "complete populate data" << endl;
 	
 	for(; numThreads < 1025; numThreads <<= 1){
+		cout << "///////start testing on " << numThreads << " threads" << endl;
 		timer.startTimer();
 		cout << "start group function" << endl;
 		group(output, input, numThreads);
@@ -55,6 +56,7 @@ int main()
 		
 		cout << "Time to group data on " << numThreads << " threads : " 
               << timer.getElapsedTime() << std::endl;
+		cout << '\n';
     }
 	
     return 0;
@@ -64,7 +66,7 @@ void populateData(Dataset& input, Dataset& expectedOutput){
 	input.clear();
 	expectedOutput.clear();
 	
-	int numRecords = 4096 * 128;
+	int numRecords = 4096 * 512;
 	//int offset = 123;
 	int numid = 128;
 	

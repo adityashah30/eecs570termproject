@@ -1,8 +1,9 @@
 #include "group.cuh"
 #include <sstream>
+//#include "cuPrintf.cu"
 
-#define ELEMENTS 4096
-#define HASH_ENTRIES 128  
+#define ELEMENTS 16384
+#define HASH_ENTRIES 512  
 
 //using namespace std;
 
@@ -25,9 +26,12 @@ void aggre_kernel(Entry** entries, Entry* pool, int* first_free, size_t size, Re
 
 	if(threadId < numThreads){
 		int chunksize = (size + numThreads-1)/numThreads;
-	
+		//std::cout << "thread id: " << threadID << std::endl;	
+		//std::cout << "chunk size: " << chunksize << std::endl;
+	//	printf("Thread id: %d\n", threadId);
+	//	printf("Chunk size: %d\n", chunksize);
 		Entry** mytable = entries + HASH_ENTRIES * threadId;
-		int* my_first_free = first_free;
+		int* my_first_free = first_free + threadId;
 		Entry* mypool = pool + ELEMENTS * threadId;
 	
 		//assert(mypool[0].key == -1);
@@ -109,15 +113,17 @@ void group(Dataset& out, Dataset& in, int numThreads){
 	// Build the table at host
 	std::cout << "start build table at host" << std::endl;
 	for(int i = 0; i < numThreads; ++i){
+		//std::cout << "start building table on thread id: " << i << std::endl;
 		int start = i * ELEMENTS;
 		int end = start + ELEMENTS;
 		for(int j = start; j < end; ++j){
+			//std::cout << "key value: " << host_pools[j].key << std::endl;
 			if(host_pools[j].key == -1)
 				break;
 			
 			int key = host_pools[j].key;
 			int hashval = hash(key, HASH_ENTRIES);
-		
+			//std::cout << "hash value: " << hashval << std::endl;
 			Entry *cur = final_entries[hashval];
 			while(cur){
 				if(cur->key == key){
