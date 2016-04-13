@@ -19,13 +19,17 @@ int main()
 	Dataset expectedOutput;
 	Timer timer;
 	
-    int numThreads = 1;
+    int numThreads = 64;
     
-	for(; numThreads < 9; ++numThreads){
-		populateData(input, expectedOutput);
-		
+	cout << "start populate data" << endl;
+	populateData(input, expectedOutput);
+	cout << "complete populate data" << endl;
+	
+	for(; numThreads < 1025; numThreads <<= 1){
 		timer.startTimer();
+		cout << "start group function" << endl;
 		group(output, input, numThreads);
+		cout << "complete group function" << endl;
 		timer.stopTimer();
 		
 		sort(output.begin(), output.end(), compare);
@@ -60,7 +64,7 @@ void populateData(Dataset& input, Dataset& expectedOutput){
 	input.clear();
 	expectedOutput.clear();
 	
-	int numRecords = 1024;
+	int numRecords = 4096 * 128;
 	//int offset = 123;
 	int numid = 128;
 	
