@@ -62,8 +62,6 @@ void selData(Dataset& out, Dataset& in, double ratingVal, int numThreads)
     int numBlocks = (numThreads+tpb-1)/tpb;
     dim3 grid(numBlocks,1,1);
  
-    std::cout << size << " " << numThreads << " " << tpb << " " << numBlocks << " " << chunkSize << std::endl;
-
     Record* out_begin = thrust::raw_pointer_cast(out_d.data());
     int* cnt_begin = thrust::raw_pointer_cast(cnt_d.data());
 
