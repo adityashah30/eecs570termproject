@@ -24,13 +24,13 @@ int main()
     	cout << "Data loaded" << endl;
 
  	cout << "Duplicating data" << endl;	
-    	duplicateDS(expandedDS, input, 2);
+    	duplicateDS(expandedDS, input, fraction);
 	cout << "Data duplicated" << endl;
 /*	
     	ofstream out(resultFile);
     	out << "#NumThreads Time" << endl;
 */
-	for(int numThreads = 32; numThreads <= 4096; numThreads <<= 1) 
+	for(int numThreads = 32; numThreads <= 8192; numThreads <<= 1) 
 	{
 		Timer timer;
 		long long expTime = 0;
