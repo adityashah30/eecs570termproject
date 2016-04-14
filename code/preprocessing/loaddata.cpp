@@ -20,6 +20,8 @@ void loadData(Dataset& data)
 
 #ifdef __MIC__
     std::string filename = "/home/micuser/ratings.csv";
+#elif __NVCC__
+    std::string filename = "/home/aditysha/570termproject/data/ratings.csv";
 #else
     std::string filename = "../../data/ratings.csv";
 #endif
