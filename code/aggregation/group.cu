@@ -1,11 +1,8 @@
 #include "group.cuh"
 #include <sstream>
-//#include "cuPrintf.cu"
 
 #define ELEMENTS 26744 
 #define HASH_ENTRIES 10000 
-
-//using namespace std;
 
 __device__ __host__ 
 int hash(int value, size_t count) {
@@ -26,10 +23,6 @@ void aggre_kernel(Entry** entries, Entry* pool, int* first_free, size_t size, Re
 
 	if(threadId < numThreads){
 		int chunksize = (size + numThreads-1)/numThreads;
-		//std::cout << "thread id: " << threadID << std::endl;	
-		//std::cout << "chunk size: " << chunksize << std::endl;
-		//printf("Thread id: %d\n", threadId);
-		//printf("Chunk size: %d\n", chunksize);
 		Entry** mytable = entries + HASH_ENTRIES * threadId;
 		int* my_first_free = first_free + threadId;
 		Entry* mypool = pool + ELEMENTS * threadId;
@@ -80,12 +73,6 @@ void group(Dataset& out, Dataset& in, int numThreads){
 	int numBlocks = (numThreads+tpb-1)/tpb;
 	dim3 grid(numBlocks,1,1);
 	
-
-	//int totalThreads = numThreads * block_1;
-	//Tables_d tables_d(numThreads);
-	
-	//for(int i = 0; i < numThreads; ++i)
-	//	initialize_table(tables_d[i], HASH_ENTRIES, ELEMENTS);
 	std::vector<Entry> final_pool(ELEMENTS * numThreads);
 
 	Entries_ptr_d total_entries_d(HASH_ENTRIES * numThreads, NULL);
@@ -93,7 +80,6 @@ void group(Dataset& out, Dataset& in, int numThreads){
 	vecint_d first_free_d(numThreads, 0);
 	
 	Record* in_begin = thrust::raw_pointer_cast(in_d.data());
-	//Table* table_begin = thrust::raw_pointer_cast(tables_d.data());
 	Entry** entries_begin = thrust::raw_pointer_cast(total_entries_d.data());
 	Entry*  pool_begin = thrust::raw_pointer_cast(total_pool_d.data());
 	int* first_free_begin = thrust::raw_pointer_cast(first_free_d.data());
@@ -108,7 +94,6 @@ void group(Dataset& out, Dataset& in, int numThreads){
 	thrust::copy(total_pool_d.begin(), total_pool_d.end(), host_pools.begin());
 
 	std::vector<Entry*> final_entries(HASH_ENTRIES, NULL);
-//	std::vector<Entry> final_pool;
 	int final_first_free = 0;
 	
 	// Build the table at host
@@ -124,7 +109,6 @@ void group(Dataset& out, Dataset& in, int numThreads){
 			
 			int key = host_pools[j].key;
 			int hashval = hash(key, HASH_ENTRIES);
-			//std::cout << "hash value: " << hashval << std::endl;
 			Entry *cur = final_entries[hashval];
 			while(cur){
 				if(cur->key == key){
@@ -147,7 +131,7 @@ void group(Dataset& out, Dataset& in, int numThreads){
 	
 	// Traverse the table, calculate the avg
 	//std::cout << "final first free: " << final_first_free << std::endl;
-	assert(final_first_free == ELEMENTS);
+	//assert(final_first_free == ELEMENTS);
 	//std::cout << "finish build table at host" << std::endl;
 	out.resize(ELEMENTS);
 	
