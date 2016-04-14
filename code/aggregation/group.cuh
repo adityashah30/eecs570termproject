@@ -40,6 +40,7 @@
  //typedef thrust::device_vector<Table> Tables_d;
  typedef thrust::device_vector<int> vecint_d;
  
- void group(Dataset& out, Dataset& in, int numThreads);
+ void group(Dataset& out, Dataset& in, int numThreads, int id_num);
  
+ void group_preprocessing(Dataset& in, int& id_num);
  #endif

@@ -42,7 +42,7 @@ int main()
             expTime += timer.getElapsedTime();
         }
         expTime /= expCount;
-        cout << "Time to sort data on " << numThreads << " threads : " 
+        cout << "Time to group data on " << numThreads << " threads : " 
              << expTime << endl;
         out << numThreads << " " << expTime << endl;
     }

@@ -1,7 +1,8 @@
 #include "group.cuh"
 #include <sstream>
+#include <unordered_set>
 
-#define ELEMENTS 26744 
+//#define ELEMENTS 26744 
 #define HASH_ENTRIES 10000 
 
 __device__ __host__ 
@@ -10,7 +11,7 @@ int hash(int value, size_t count) {
 }
 
 __global__ 
-void aggre_kernel(Entry** entries, Entry* pool, int* first_free, size_t size, Record* in){
+void aggre_kernel(Entry** entries, Entry* pool, int* first_free, size_t size, Record* in, int ELEMENTS){
     size_t blockId = blockIdx.x
                   + blockIdx.y*gridDim.x
                   + blockIdx.z*gridDim.y*gridDim.x;
@@ -63,10 +64,12 @@ void aggre_kernel(Entry** entries, Entry* pool, int* first_free, size_t size, Re
 }
 
 
-void group(Dataset& out, Dataset& in, int numThreads){
+void group(Dataset& out, Dataset& in, int numThreads, int id_num){
 	Dataset_d in_d = in;
 	out.clear();
 	size_t size = in.size();
+//	std::cout << "Elements count: " << id_num << std::endl; 
+	int ELEMENTS = id_num;
 //	std::cout << "Dataset size: " << size << std::endl;
 	int tpb = (numThreads<1024)?numThreads:1024;
     dim3 block(tpb,1,1);
@@ -85,7 +88,7 @@ void group(Dataset& out, Dataset& in, int numThreads){
 	int* first_free_begin = thrust::raw_pointer_cast(first_free_d.data());
 
 	//std::cout << "start aggregation kernel" << std::endl;	
-	aggre_kernel<<<grid, block>>>(entries_begin, pool_begin, first_free_begin, size, in_begin);
+	aggre_kernel<<<grid, block>>>(entries_begin, pool_begin, first_free_begin, size, in_begin, ELEMENTS);
 	checkCudaErrorKernel("aggregationKernel");
 	//std::cout << "end aggregation kernel" << std::endl;
 	
@@ -146,5 +149,13 @@ void group(Dataset& out, Dataset& in, int numThreads){
 		}
 	}
 	//std::cout << "complete populate to out" << std::endl;
-	
 }
+
+ void group_preprocessing(Dataset& in, int& id_num){
+	 std::unordered_set<int> id_set;
+	 int size = in.size();
+	 for(int i = 0; i < size; ++i)
+		 id_set.insert(in[i].movieId);
+	 
+	 id_num = id_set.size();
+ }

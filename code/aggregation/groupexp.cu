@@ -18,13 +18,15 @@ int main()
     Dataset input;
     Dataset output;
     Dataset expandDS;	
-	int expCount = 5;
+	int expCount = 1;
 	
     string resultFile = "AggregationScalingGPUResults.txt";	
 	
     cout << "Loading data" << endl;
     loadData(input);
     cout << "Data loaded" << endl;
+    int id_num = 0;
+    group_preprocessing(input, id_num); 
 
     duplicateDS(expandDS, input, 5);
     ofstream out(resultFile);
@@ -37,12 +39,12 @@ int main()
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
-            group(output, expandDS, numThreads);
+            group(output, expandDS, numThreads, id_num);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
         expTime /= expCount;
-        cout << "Time to sort data on " << numThreads << " threads : " 
+        cout << "Time to group data on " << numThreads << " threads : " 
              << expTime << endl;
         out << numThreads << " " << expTime << endl;
     }

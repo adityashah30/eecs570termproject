@@ -29,7 +29,7 @@ int main()
 		cout << "///////start testing on " << numThreads << " threads" << endl;
 		timer.startTimer();
 		cout << "start group function" << endl;
-		group(output, input, numThreads);
+		group(output, input, numThreads, 111);
 		cout << "complete group function" << endl;
 		timer.stopTimer();
 		
