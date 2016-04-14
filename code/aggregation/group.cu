@@ -3,7 +3,7 @@
 //#include "cuPrintf.cu"
 
 #define ELEMENTS 26744 
-#define HASH_ENTRIES 1024  
+#define HASH_ENTRIES 10000 
 
 //using namespace std;
 
