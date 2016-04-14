@@ -17,8 +17,8 @@ int main()
 //    Dataset originalInput;
     Dataset input;
     Dataset output;
-	
-	int expCount = 20;
+    Dataset expandDS;	
+	int expCount = 5;
 	
     string resultFile = "AggregationScalingGPUResults.txt";	
 	
@@ -26,17 +26,18 @@ int main()
     loadData(input);
     cout << "Data loaded" << endl;
 
+    duplicateDS(expandDS, input, 5);
     ofstream out(resultFile);
     out << "#NumThreads Time" << endl;
 
-    for(int numThreads = 32; numThreads <= 1024; numThreads <<= 1)
+    for(int numThreads = 32; numThreads <= 4096; numThreads <<= 1)
     {
         Timer timer;
         long long expTime = 0;
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();
-            gorup(output, input, numThreads);
+            group(output, expandDS, numThreads);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }

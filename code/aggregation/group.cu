@@ -2,8 +2,8 @@
 #include <sstream>
 //#include "cuPrintf.cu"
 
-#define ELEMENTS 16384
-#define HASH_ENTRIES 512  
+#define ELEMENTS 26744 
+#define HASH_ENTRIES 1024  
 
 //using namespace std;
 
@@ -28,8 +28,8 @@ void aggre_kernel(Entry** entries, Entry* pool, int* first_free, size_t size, Re
 		int chunksize = (size + numThreads-1)/numThreads;
 		//std::cout << "thread id: " << threadID << std::endl;	
 		//std::cout << "chunk size: " << chunksize << std::endl;
-	//	printf("Thread id: %d\n", threadId);
-	//	printf("Chunk size: %d\n", chunksize);
+		//printf("Thread id: %d\n", threadId);
+		//printf("Chunk size: %d\n", chunksize);
 		Entry** mytable = entries + HASH_ENTRIES * threadId;
 		int* my_first_free = first_free + threadId;
 		Entry* mypool = pool + ELEMENTS * threadId;
@@ -37,7 +37,8 @@ void aggre_kernel(Entry** entries, Entry* pool, int* first_free, size_t size, Re
 		//assert(mypool[0].key == -1);
 		int idx1 = threadId * chunksize;
      		int idx2 = (threadId + 1) * chunksize;
-        	if(threadId == numThreads-1){
+        	if(idx1 >= size) return;
+		if(idx2 >= size){
         	    idx2 = size;
         	}
 		for(int cur_id = idx1; cur_id < idx2; ++cur_id){
@@ -70,10 +71,10 @@ void aggre_kernel(Entry** entries, Entry* pool, int* first_free, size_t size, Re
 
 
 void group(Dataset& out, Dataset& in, int numThreads){
-    	Dataset_d in_d = in;
+	Dataset_d in_d = in;
 	out.clear();
 	size_t size = in.size();
-
+//	std::cout << "Dataset size: " << size << std::endl;
 	int tpb = (numThreads<1024)?numThreads:1024;
     dim3 block(tpb,1,1);
 	int numBlocks = (numThreads+tpb-1)/tpb;
@@ -97,10 +98,10 @@ void group(Dataset& out, Dataset& in, int numThreads){
 	Entry*  pool_begin = thrust::raw_pointer_cast(total_pool_d.data());
 	int* first_free_begin = thrust::raw_pointer_cast(first_free_d.data());
 
-	std::cout << "start aggregation kernel" << std::endl;	
+	//std::cout << "start aggregation kernel" << std::endl;	
 	aggre_kernel<<<grid, block>>>(entries_begin, pool_begin, first_free_begin, size, in_begin);
 	checkCudaErrorKernel("aggregationKernel");
-	std::cout << "end aggregation kernel" << std::endl;
+	//std::cout << "end aggregation kernel" << std::endl;
 	
 	std::vector<Entry> host_pools(ELEMENTS * numThreads);
 	
@@ -111,13 +112,13 @@ void group(Dataset& out, Dataset& in, int numThreads){
 	int final_first_free = 0;
 	
 	// Build the table at host
-	std::cout << "start build table at host" << std::endl;
+	//std::cout << "start build table at host" << std::endl;
 	for(int i = 0; i < numThreads; ++i){
-		//std::cout << "start building table on thread id: " << i << std::endl;
+	//	std::cout << "start building table on thread id: " << i << std::endl;
 		int start = i * ELEMENTS;
 		int end = start + ELEMENTS;
 		for(int j = start; j < end; ++j){
-			//std::cout << "key value: " << host_pools[j].key << std::endl;
+	//		std::cout << "key value: " << host_pools[j].key << std::endl;
 			if(host_pools[j].key == -1)
 				break;
 			
@@ -145,9 +146,9 @@ void group(Dataset& out, Dataset& in, int numThreads){
 	}
 	
 	// Traverse the table, calculate the avg
-	std::cout << "final first free: " << final_first_free << std::endl;
+	//std::cout << "final first free: " << final_first_free << std::endl;
 	assert(final_first_free == ELEMENTS);
-	std::cout << "finish build table at host" << std::endl;
+	//std::cout << "finish build table at host" << std::endl;
 	out.resize(ELEMENTS);
 	
 	int k = 0;
@@ -160,6 +161,6 @@ void group(Dataset& out, Dataset& in, int numThreads){
 			cur = cur->next;
 		}
 	}
-	std::cout << "complete populate to out" << std::endl;
+	//std::cout << "complete populate to out" << std::endl;
 	
 }

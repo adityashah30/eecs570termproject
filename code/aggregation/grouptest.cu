@@ -19,7 +19,7 @@ int main()
 	Dataset expectedOutput;
 	Timer timer;
 	
-    int numThreads = 32;
+    int numThreads = 1024;
     
 	cout << "start populate data" << endl;
 	populateData(input, expectedOutput);
@@ -66,9 +66,9 @@ void populateData(Dataset& input, Dataset& expectedOutput){
 	input.clear();
 	expectedOutput.clear();
 	
-	int numRecords = 4096 * 512;
+	int numRecords = 3333 * 111;
 	//int offset = 123;
-	int numid = 128;
+	int numid = 3333;
 	
 	for(int i = 0; i < numRecords/numid; ++i){
 		double total = 0;
