@@ -22,7 +22,7 @@ int main()
     loadData(input);
     cout << "Data loaded" << endl;
 
-    int expCount = 10;
+    int expCount = 20;
 
     cout << "Conducting tests on Aggregation..." << endl;
     testAggregation(output, input, expCount);
@@ -40,18 +40,13 @@ int main()
 void testAggregation(Dataset& output, Dataset& input, int expCount)
 {
 #ifdef __MIC__
-    string threadResultFile = "/home/micuser/aggregationThreadScalingResults.mic.txt";
-    string sizeResultFile = "/home/micuser/aggregationSizeScalingResults.mic.txt";
+    string threadResultFile = "/home/micuser/aggregation.mic.txt";
 #else
-    string threadResultFile = "aggregationThreadScalingResults.txt";
-    string sizeResultFile = "aggregationSizeScalingResults.txt";
+    string threadResultFile = "cpuresults/aggregation.txt";
 #endif
 
     int group_idx = 1;
     int target_idx = 2;
-
-    int optimalNumThreads = 2;
-    long long optimalTime = numeric_limits<long long>::max();
 
     long long singleThreadTime = 0;
 
@@ -88,64 +83,17 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
-        if(numThreads == 1)
+        if(numThreads == minNumThreads)
         {
             singleThreadTime = expTime;
         }
 
-        long long idealTime = singleThreadTime/numThreads;
-
-        if(optimalTime > expTime)
-        {
-            optimalTime = expTime;
-            optimalNumThreads = numThreads;
-        }
+        double speedup = (double)singleThreadTime/expTime;
 
         cout << "Time to aggregate data on " << numThreads << " threads : " 
-             << expTime << "; Ideal Time: " << idealTime << endl;
-        out << numThreads << " " << expTime << " " << idealTime << endl; 
+             << expTime << "; Speedup: " << speedup << endl;
+        out << numThreads << " " << expTime << " " << speedup << endl; 
     }
-
-    out.close();
-
-    double fractions[] = {0.25, 0.5, 0.75};
-    int numFractions = sizeof(fractions)/sizeof(double);
-
-    Dataset smallDS;
-
-    out.open(sizeResultFile);
-    out << "#Fraction Time (Optimal numThreads: " << optimalNumThreads << ")" << endl;
-
-    for(int i=0; i<numFractions; i++)
-    {
-    #ifdef __INTEL_COMPILER
-        extractSmallDS(smallDS, expandedDS, fractions[i]);
-    #else
-        extractSmallDS(smallDS, input, fractions[i]);
-    #endif
-
-        Timer timer;
-        long long expTime = 0;
-        for(int c = 0; c < expCount; c++)
-        {
-            timer.startTimer();
-            group(output, smallDS, optimalNumThreads);
-            timer.stopTimer();
-            expTime += timer.getElapsedTime();
-        }
-        expTime /= expCount;
-
-        long long idealTime = fractions[i]*optimalTime;
-
-        cout << "Time to aggregate data on fraction: " << fractions[i] 
-             << " using optimal numThread: " << optimalNumThreads
-             << " is : " << expTime << "; Ideal Time: " << idealTime << endl;
-        out << fractions[i] << " " << expTime << " " << idealTime << endl;
-    }
-    cout << "Time to aggregate data on fraction: 1.0"
-         << " using optimal numThread: " << optimalNumThreads
-         << " is : " << optimalTime << "; Ideal Time: " << optimalTime << endl;
-    out << "1.0 " << optimalTime << " " << optimalTime << endl;
 
     out.close();
 }
@@ -154,17 +102,12 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
 {
 
 #ifdef __MIC__
-    string threadResultFile = "/home/micuser/selectionThreadScalingResults.mic.txt";
-    string sizeResultFile = "/home/micuser/selectionSizeScalingResults.mic.txt";
+    string threadResultFile = "/home/micuser/selection.mic.txt";
 #else
-    string threadResultFile = "selectionThreadScalingResults.txt";
-    string sizeResultFile = "selectionSizeScalingResults.txt";
+    string threadResultFile = "cpuresults/selection.txt";
 #endif
 
     double cons = 3.5;
-
-    int optimalNumThreads = 2;
-    long long optimalTime = numeric_limits<long long>::max();
 
     long long singleThreadTime = 0;
 
@@ -201,64 +144,17 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
-        if(numThreads == 1)
+        if(numThreads == minNumThreads)
         {
             singleThreadTime = expTime;
         }
 
-        long long idealTime = singleThreadTime/numThreads;
-
-        if(optimalTime > expTime)
-        {
-            optimalTime = expTime;
-            optimalNumThreads = numThreads;
-        }
+        double speedup = (double)singleThreadTime/expTime;
 
         cout << "Time to select data on " << numThreads << " threads : " 
-             << expTime << "; Ideal Time: " << idealTime << endl;
-        out << numThreads << " " << expTime << " " << idealTime << endl;
+             << expTime << "; Speedup: " << speedup << endl;
+        out << numThreads << " " << expTime << " " << speedup << endl; 
     }
-
-    out.close();
-
-    double fractions[] = {0.25, 0.5, 0.75};
-    int numFractions = sizeof(fractions)/sizeof(double);
-
-    Dataset smallDS;
-
-    out.open(sizeResultFile);
-    out << "#Fraction Time (Optimal numThreads: " << optimalNumThreads << ")" << endl;
-
-    for(int i=0; i<numFractions; i++)
-    {
-    #ifdef __INTEL_COMPILER
-        extractSmallDS(smallDS, expandedDS, fractions[i]);
-    #else
-        extractSmallDS(smallDS, input, fractions[i]);
-    #endif
-
-        Timer timer;
-        long long expTime = 0;
-        for(int c = 0; c < expCount; c++)
-        {
-            timer.startTimer();
-            selData(output, smallDS, cons, optimalNumThreads);
-            timer.stopTimer();
-            expTime += timer.getElapsedTime();
-        }
-        expTime /= expCount;
-
-        long long idealTime = fractions[i]*optimalTime;
-
-        cout << "Time to select data on fraction: " << fractions[i] 
-             << " using optimal numThread: " << optimalNumThreads
-             << " is : " << expTime << "; Ideal Time: " << idealTime << endl;
-        out << fractions[i] << " " << expTime << " " << idealTime << endl;
-    }
-    cout << "Time to select data on fraction: 1.0"
-         << " using optimal numThread: " << optimalNumThreads
-         << " is : " << optimalTime << "; Ideal Time: " << optimalTime << endl;
-    out << "1.0 " << optimalTime << " " << optimalTime << endl;
 
     out.close();
 }
@@ -267,11 +163,9 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
 {
 
 #ifdef __MIC__
-    string threadResultFile = "/home/micuser/sortingThreadScalingResults.mic.txt";
-    string sizeResultFile = "/home/micuser/sortingSizeScalingResults.mic.txt";
+    string threadResultFile = "/home/micuser/sorting.mic.txt";
 #else
-    string threadResultFile = "sortingThreadScalingResults.txt";
-    string sizeResultFile = "sortingSizeScalingResults.txt";
+    string threadResultFile = "cpuresults/sorting.txt";
 #endif
 
     Dataset powerOf2DS;
@@ -281,9 +175,6 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
     cout << "Conversion complete" << endl;
 
     int fieldIdx = 2;
-
-    int optimalNumThreads = 2;
-    long long optimalTime = numeric_limits<long long>::max();
 
     long long singleThreadTime = 0;
 
@@ -297,11 +188,6 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
     ofstream out(threadResultFile);
     out << "#NumThreads Time" << endl;
 
-    ///////////////////Reduce Dataset Size for Sorting//////
-    Dataset reducedDS;
-    extractSmallDS(reducedDS, powerOf2DS, 0.5);
-    ////////////////////////////////////////////////////////
-
     for(int numThreads = minNumThreads; numThreads <= maxNumThreads; numThreads <<= 1)
     {
         Timer timer;
@@ -309,68 +195,23 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
         for(int c = 0; c < expCount; c++)
         {
             timer.startTimer();	
-            // sortData(output, powerOf2DS, fieldIdx, numThreads);
-            sortData(output, reducedDS, fieldIdx, numThreads);
+            sortData(output, powerOf2DS, fieldIdx, numThreads);
             timer.stopTimer();
             expTime += timer.getElapsedTime();
         }
         expTime /= expCount;
 
-        if(numThreads == 1)
+        if(numThreads == minNumThreads)
         {
             singleThreadTime = expTime;
         }
 
-        long long idealTime = singleThreadTime/numThreads;
-
-        if(optimalTime > expTime)
-        {
-            optimalTime = expTime;
-            optimalNumThreads = numThreads;
-        }
+        double speedup = (double)singleThreadTime/expTime;
 
         cout << "Time to sort data on " << numThreads << " threads : " 
-             << expTime << "; Ideal Time: " << idealTime << endl;
-        out << numThreads << " " << expTime << " " << idealTime << endl;
+             << expTime << "; Speedup: " << speedup << endl;
+        out << numThreads << " " << expTime << " " << speedup << endl;
     }
-
-    out.close();
-
-    double fractions[] = {0.25, 0.5, 0.75};
-    int numFractions = sizeof(fractions)/sizeof(double);
-
-    Dataset smallDS;
-
-    out.open(sizeResultFile);
-    out << "#Fraction Time (Optimal numThreads: " << optimalNumThreads << ")" << endl;
-
-    for(int i=0; i<numFractions; i++)
-    { 
-        extractSmallDS(smallDS, reducedDS, fractions[i]);
-	//tractSmallDS(smallDS, powerOf2DS, fractions[i]);
-
-        Timer timer;
-        long long expTime = 0;
-        for(int c = 0; c < expCount; c++)
-        {
-            timer.startTimer();
-            sortData(output, smallDS, fieldIdx, optimalNumThreads);
-            timer.stopTimer();
-            expTime += timer.getElapsedTime();
-        }
-        expTime /= expCount;
-
-        long long idealTime = fractions[i]*optimalTime;
-
-        cout << "Time to sort data on fraction: " << fractions[i] 
-             << " using optimal numThread: " << optimalNumThreads
-             << " is : " << expTime << "; Ideal Time: " << idealTime << endl;
-        out << fractions[i] << " " << expTime << " " << idealTime << endl;
-    }
-    cout << "Time to sort data on fraction: 1.0"
-         << " using optimal numThread: " << optimalNumThreads
-         << " is : " << optimalTime << "; Ideal Time: " << optimalTime << endl;
-    out << "1.0 " << optimalTime << " " << optimalTime << endl;
 
     out.close();
 }

@@ -22,7 +22,7 @@ int main()
     loadData(input);
     cout << "Data loaded" << endl;
 
-    int expCount = 10;
+    int expCount = 20;
 
     cout << "Conducting tests on Aggregation..." << endl;
     testAggregation(output, input, expCount);
@@ -49,7 +49,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
 
     long long singleThreadTime = 0;
 
-    int minNumThreads = 1;
+    int minNumThreads = 32;
     int maxNumThreads = 1024;
 
     double fraction = 5;
@@ -72,7 +72,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
-        if(numThreads == 1)
+        if(numThreads == minNumThreads)
         {
             singleThreadTime = expTime;
         }
@@ -81,12 +81,7 @@ void testAggregation(Dataset& output, Dataset& input, int expCount)
 
         cout << "Time to aggregate data on " << numThreads << " threads : " 
              << expTime << "; Speedup: " << speedup << endl;
-        out << numThreads << " " << expTime << " " << speedup << endl; 
-
-        if(numThreads == 1)
-        {
-            numThreads = 16;
-        }
+        out << numThreads << " " << expTime << " " << speedup << endl;
     }
 
     out.close();
@@ -101,7 +96,7 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
 
     long long singleThreadTime = 0;
 
-    int minNumThreads = 1;
+    int minNumThreads = 32;
     int maxNumThreads = 1024;
 
     double fraction = 5;
@@ -124,21 +119,16 @@ void testSelection(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
-        if(numThreads == 1)
+        if(numThreads == minNumThreads)
         {
             singleThreadTime = expTime;
         }
 
         double speedup = (double)singleThreadTime/expTime;
 
-        cout << "Time to aggregate data on " << numThreads << " threads : " 
+        cout << "Time to select data on " << numThreads << " threads : " 
              << expTime << "; Speedup: " << speedup << endl;
-        out << numThreads << " " << expTime << " " << speedup << endl; 
-
-        if(numThreads == 1)
-        {
-            numThreads = 16;
-        }
+        out << numThreads << " " << expTime << " " << speedup << endl;
     }
 
     out.close();
@@ -153,7 +143,7 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
 
     long long singleThreadTime = 0;
 
-    int minNumThreads = 1;
+    int minNumThreads = 32;
     int maxNumThreads = 1024;
 
     Dataset powerOf2DS;
@@ -178,21 +168,16 @@ void testSorting(Dataset& output, Dataset& input, int expCount)
         }
         expTime /= expCount;
 
-        if(numThreads == 1)
+        if(numThreads == minNumThreads)
         {
             singleThreadTime = expTime;
         }
 
         double speedup = (double)singleThreadTime/expTime;
 
-        cout << "Time to aggregate data on " << numThreads << " threads : " 
+        cout << "Time to sort data on " << numThreads << " threads : " 
              << expTime << "; Speedup: " << speedup << endl;
-        out << numThreads << " " << expTime << " " << speedup << endl; 
-
-        if(numThreads == 1)
-        {
-            numThreads = 16;
-        } 
+        out << numThreads << " " << expTime << " " << speedup << endl;
     }
 
     out.close();
