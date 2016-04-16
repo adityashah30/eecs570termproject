@@ -1,0 +1,62 @@
+set terminal pdf
+set output "plots/aggregationCPU.pdf"
+set xlabel "NumThreads"
+set ylabel "Speedup"
+set title "Speedup vs NumThreads on CPU (Aggregation)"
+plot "cpuresults/aggregation.txt" u 1:3 w linespoints title "Speedup"
+
+set terminal pdf
+set output "plots/selectionCPU.pdf"
+set xlabel "NumThreads"
+set ylabel "Speedup"
+set title "Speedup vs NumThreads on CPU (Selection)"
+plot "cpuresults/selection.txt" u 1:3 w linespoints title "Speedup"
+
+set terminal pdf
+set output "plots/sortingCPU.pdf"
+set xlabel "NumThreads"
+set ylabel "Speedup"
+set title "Speedup vs NumThreads on CPU (Sorting)"
+plot "cpuresults/sorting.txt" u 1:3 w linespoints title "Speedup"
+
+set terminal pdf
+set output "plots/aggregationXeonPhi.pdf"
+set xlabel "NumThreads"
+set ylabel "Speedup"
+set title "Speedup vs NumThreads on Xeon Phi (Aggregation)"
+plot "xeonresults/aggregation.mic.txt" u 1:3 w linespoints title "Speedup"
+
+set terminal pdf
+set output "plots/selectionXeonPhi.pdf"
+set xlabel "NumThreads"
+set ylabel "Speedup"
+set title "Speedup vs NumThreads on Xeon Phi (Selection)"
+plot "xeonresults/selection.mic.txt" u 1:3 w linespoints title "Speedup"
+
+set terminal pdf
+set output "plots/sortingXeonPhi.pdf"
+set xlabel "NumThreads"
+set ylabel "Speedup"
+set title "Speedup vs NumThreads on Xeon Phi (Sorting)"
+plot "xeonresults/sorting.mic.txt" u 1:3 w linespoints title "Speedup"
+
+set terminal pdf
+set output "plots/aggregationGPU.pdf"
+set xlabel "NumThreads"
+set ylabel "Speedup"
+set title "Speedup vs NumThreads on K20Xm (Aggregation)"
+plot "gpuresults/aggregation.cu.txt" u 1:3 w linespoints title "Speedup"
+
+set terminal pdf
+set output "plots/selectionGPU.pdf"
+set xlabel "NumThreads"
+set ylabel "Speedup"
+set title "Speedup vs NumThreads on K20Xm (Selection)"
+plot "gpuresults/selection.cu.txt" u 1:3 w linespoints title "Speedup"
+
+set terminal pdf
+set output "plots/sortingGPU.pdf"
+set xlabel "NumThreads"
+set ylabel "Speedup"
+set title "Speedup vs NumThreads on K20Xm (Sorting)"
+plot "gpuresults/sorting.cu.txt" u 1:3 w linespoints title "Speedup"
